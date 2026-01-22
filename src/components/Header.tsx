@@ -38,17 +38,17 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200">
-      <div className="px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center">
-          <div className="w-20 h-12 bg-white flex items-center justify-center">
-            <img src={logo} />
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-4">
+        <div className="flex items-center flex-shrink-0">
+          <div className="w-16 sm:w-20 h-10 sm:h-12 bg-white flex items-center justify-center">
+            <img src={logo || "/placeholder.svg"} alt="Logo" className="max-w-full max-h-full" />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-32 sm:w-48 text-xs sm:text-sm">
               <SelectValue />
             </SelectTrigger>
 
@@ -59,15 +59,15 @@ const Header = () => {
             >
               <SelectItem value="vi">
                 <div className="flex items-center gap-2">
-                  <img src={vn} className="w-5 h-5" />
-                  Tiếng Việt
+                  <img src={vn || "/placeholder.svg"} className="w-4 h-4 sm:w-5 sm:h-5" alt="Vietnamese" />
+                  <span className="text-xs sm:text-sm">Tiếng Việt</span>
                 </div>
               </SelectItem>
 
               <SelectItem value="en">
                 <div className="flex items-center gap-2">
-                  <img src={en} className="w-5 h-5" />
-                  English
+                  <img src={en || "/placeholder.svg"} className="w-4 h-4 sm:w-5 sm:h-5" alt="English" />
+                  <span className="text-xs sm:text-sm">English</span>
                 </div>
               </SelectItem>
             </SelectContent>
@@ -76,20 +76,20 @@ const Header = () => {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setOpenUserMenu(!openUserMenu)}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 hover:bg-orange-200 transition"
+              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-orange-100 hover:bg-orange-200 transition flex-shrink-0"
             >
-              <User className="w-5 h-5 text-orange-600" />
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
             </button>
 
             {openUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
-                <div className="px-3 py-2 flex items-center gap-3">
-                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300">
-                    <User className="w-4 h-4 text-white" />
+              <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                <div className="px-4 py-3 sm:py-4 flex items-center gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-300 flex-shrink-0">
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-sm text-gray-700 font-medium truncate">
+                    <p className="text-xs sm:text-sm text-gray-700 font-medium truncate">
                       {user?.fullName || "Người dùng"}
                     </p>
                     <p className="text-xs text-gray-400 truncate">
@@ -105,9 +105,9 @@ const Header = () => {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition"
+                  className="w-full flex items-center gap-2 px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition"
                 >
-                  <LogOut className="size-4" />
+                  <LogOut className="w-4 h-4" />
                   Đăng xuất
                 </button>
               </div>

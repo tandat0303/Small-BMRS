@@ -1,7 +1,7 @@
 import Login from "./pages/Login";
 import "./App.css"
 import { Route, Routes } from "react-router-dom";
-import Home from "./pages/Dashboard";
+import Home from "./pages/Home";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 

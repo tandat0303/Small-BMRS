@@ -52,7 +52,7 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-16 sm:py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -60,7 +60,7 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm sm:text-base">
         {error}
       </div>
     );
@@ -68,15 +68,15 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
 
   if (filteredRooms.length === 0) {
     return (
-      <div className="text-center py-20">
-        <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-500">Không tìm thấy phòng họp phù hợp</p>
+      <div className="text-center py-16 sm:py-20">
+        <Users className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-500 text-sm sm:text-base">Không tìm thấy phòng họp phù hợp</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
       {filteredRooms.map((room) => (
         <RoomCard key={room.ID_Room} room={room} />
       ))}

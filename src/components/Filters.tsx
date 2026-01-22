@@ -1,5 +1,3 @@
-// src/components/Filter.tsx
-
 import React from 'react';
 import { Filter } from 'lucide-react';
 import type { FilterState } from '../types';
@@ -47,30 +45,30 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
     filters.dateRange.end;
 
   return (
-    <aside className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
-      <div className="flex items-center justify-between mb-6">
+    <aside className="w-full md:w-80 bg-white border-l border-gray-200 p-4 sm:p-6 overflow-y-auto max-h-[calc(100vh-5rem)]">
+      <div className="flex items-center justify-between mb-6 gap-2">
         <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5 text-gray-700" />
-          <h2 className="text-lg font-semibold text-gray-900">Bộ lọc phòng họp</h2>
+          <Filter className="w-5 h-5 text-gray-700 flex-shrink-0" />
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Bộ lọc phòng họp</h2>
         </div>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+            className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
           >
-            Xóa bộ lọc
+            Xóa
           </button>
         )}
       </div>
 
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Thời gian</h3>
+      <div className="mb-6 pb-6 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Thời gian</h3>
         <div className="grid grid-cols-2 gap-2">
           <input
             type="date"
             placeholder="Cả ngày"
             value={filters.dateRange.start || ''}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             onChange={(e) =>
               setFilters((prev) => ({
                 ...prev,
@@ -82,7 +80,7 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
             type="date"
             placeholder="Khoảng thời gian"
             value={filters.dateRange.end || ''}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             onChange={(e) =>
               setFilters((prev) => ({
                 ...prev,
@@ -94,14 +92,14 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
       </div>
 
       {/* Area Filter */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Khu vực</h3>
+      <div className="mb-6 pb-6 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Khu vực</h3>
         <div className="space-y-2">
           {areas.map((area) => (
             <button
               key={area}
               onClick={() => toggleArea(area)}
-              className={`w-full px-3 py-2 text-sm text-left rounded-lg border transition-colors ${
+              className={`w-full px-3 py-2.5 text-xs sm:text-sm text-left rounded-lg border transition-colors ${
                 filters.areas.includes(area)
                   ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -114,14 +112,14 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
       </div>
 
       {/* Capacity Filter */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Sức chứa</h3>
+      <div className="mb-6 pb-6 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Sức chứa</h3>
         <div className="grid grid-cols-2 gap-2">
           {capacities.map((capacity) => (
             <button
               key={capacity}
               onClick={() => toggleCapacity(capacity)}
-              className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
+              className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors ${
                 filters.capacities.includes(capacity)
                   ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -134,8 +132,8 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
       </div>
 
       {/* Room Status Filter */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">
+      <div>
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
           Trạng thái phòng họp
         </h3>
         <div className="grid grid-cols-2 gap-2">
@@ -143,7 +141,7 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
             onClick={() =>
               setFilters((prev) => ({ ...prev, roomStatus: 'available' }))
             }
-            className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
+            className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors ${
               filters.roomStatus === 'available'
                 ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
                 : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -155,7 +153,7 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
             onClick={() =>
               setFilters((prev) => ({ ...prev, roomStatus: 'occupied' }))
             }
-            className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
+            className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors ${
               filters.roomStatus === 'occupied'
                 ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
                 : 'border-gray-300 text-gray-700 hover:bg-gray-50'
