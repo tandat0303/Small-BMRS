@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Users, MapPin, MoreVertical, AlertTriangle } from 'lucide-react';
+import { Users, MapPin, AlertTriangle } from 'lucide-react';
 import type { Room } from '../types';
 import BookingModal from '../components/BookingModal';
 
