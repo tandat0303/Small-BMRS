@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "http://erp.lacty.com.vn:8081/:path*"
+    }
+  ]
+}
