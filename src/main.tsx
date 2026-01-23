@@ -11,3 +11,5 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
+{/*git reset --hard origin/main*/}
