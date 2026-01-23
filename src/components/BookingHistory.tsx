@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, MapPin, Trash2, List } from 'lucide-react';
 import type { Meeting } from '../types';
-import { scheduleAPI } from '../services/rooms.api';
+import { scheduleAPI } from '../services/schedules.api';
 import storage from '@/lib/storage';
 
 const BookingHistory: React.FC = () => {

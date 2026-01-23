@@ -45,7 +45,7 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
     filters.dateRange.end;
 
   return (
-    <aside className="w-full md:w-80 bg-white border-l border-gray-200 p-4 sm:p-6 overflow-y-auto max-h-[calc(100vh-5rem)]">
+    <aside className="w-full md:w-80 bg-white border-l border-gray-200 p-4 sm:p-6 overflow-y-auto max-h">
       <div className="flex items-center justify-between mb-6 gap-2">
         <div className="flex items-center gap-2">
           <Filter className="w-5 h-5 text-gray-700 flex-shrink-0" />
