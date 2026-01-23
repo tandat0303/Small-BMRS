@@ -1,4 +1,4 @@
-import type { Room, Meeting } from "@/types";
+import type { Room } from "@/types";
 import axiosConfig from "./axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -17,46 +17,25 @@ export const roomAPI = {
   },
 
   bookRoom: async (data: {
-    roomId: number;
-    userId: string;
-    startTime: string;
-    endTime: string;
-    meetingName: string;
-    department: string;
-    hostName: string;
+    roomId: number,
+    userId: number,
+    fullName: string,
+    startTime: string,
+    endTime: string,
+    meetingName: string,
+    meetingPurpose: string,
+    department: string,
+    hostName: string,
+    substituteCard: string,
+    substituteName: string,
+    bpmNumber: string,
+    daysOfWeek: string[],
   }): Promise<any> => {
     try {
       const response = await axiosConfig.post(`/bookmeeting/create`, data);
       return response.data;
     } catch (error) {
       console.error("Error booking room:", error);
-      throw error;
-    }
-  },
-};
-
-export const scheduleAPI = {
-  getMySchedule: async (
-    factory: string = 'LYV',
-    userId: string
-  ): Promise<Meeting[]> => {
-    try {
-      const response = await axiosConfig.get(
-        `${API_URL}/bookmeeting/${factory}/${userId}/getmyschedule`
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching schedule:', error);
-      throw error;
-    }
-  },
-
-  cancelSchedule: async (scheduleId: number): Promise<any> => {
-    try {
-      const response = await axiosConfig.delete(`/bookmeeting/cancel/${scheduleId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error canceling schedule:', error);
       throw error;
     }
   },

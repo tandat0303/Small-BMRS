@@ -36,7 +36,7 @@ export interface FilterState {
   };
   areas: string[];
   capacities: number[];
-  roomStatus: 'all' | 'available' | 'occupied';
+  roomStatus: "all" | "available" | "occupied";
 }
 
 export interface BookingFormData {
@@ -50,7 +50,23 @@ export interface BookingFormData {
 }
 
 export interface LoginPayload {
-  userId: string,
-  password: string,
-  factory: string,
+  userId: string;
+  password: string;
+  factory: string;
+}
+export interface Schedule {
+  ID_Schedule: number;
+  ID_Room: number;
+  ID_User: string;
+  Topic: string;
+  Purpose: string;
+  Time_Start: string;
+  Time_End: string;
+  Capacity: number;
+  Name: string;
+  Factory: string;
+  Area: string;
+  Name_User: string;
+  DP_User: string;
+  Cancel: string | null;
 }
