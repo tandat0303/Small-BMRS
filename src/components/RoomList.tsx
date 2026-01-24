@@ -3,6 +3,8 @@ import { Users } from 'lucide-react';
 import type { Room, FilterState } from '../types';
 import { roomAPI } from '../services/rooms.api';
 import RoomCard from '../components/RoomCard';
+import { scheduleAPI } from '@/services/schedules.api';
+import { isOverlapping } from '@/lib/helpers';
 
 interface RoomListProps {
   filters: FilterState;
@@ -12,6 +14,7 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [roomsWithBookings, setRoomsWithBookings] = useState<any[]>([]);
 
   useEffect(() => {
     fetchRooms();
@@ -32,20 +35,77 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
     }
   };
 
-  // Filter rooms based on filters
-  const filteredRooms = rooms.filter((room) => {
-    // Filter by area
-    if (filters.areas.length > 0 && !filters.areas.includes(room.Area)) {
-      return false;
+  const getTimeRange = () => {
+    if (filters.timeFilter.mode === 'allDay') {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+
+      return { start, end };
     }
 
-    // Filter by capacity
-    if (filters.capacities.length > 0) {
-      const hasMatchingCapacity = filters.capacities.some(
+    if (
+      filters.timeFilter.mode === 'range' &&
+      filters.timeFilter.startDateTime &&
+      filters.timeFilter.endDateTime
+    ) {
+      return {
+        start: new Date(filters.timeFilter.startDateTime),
+        end: new Date(filters.timeFilter.endDateTime),
+      };
+    }
+
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    return { start, end };
+  };
+
+  useEffect(() => {
+    if (!rooms.length) return;
+
+    const loadSchedules = async () => {
+      const results = await Promise.all(
+        rooms.map(async (room) => {
+          const schedules = await scheduleAPI.getAllSchedulesOfRoom(room.ID_Room);
+          return {
+            ...room,
+            bookings: schedules.filter((b: any) => !b.Cancel),
+          };
+        })
+      );
+
+      setRoomsWithBookings(results);
+    };
+
+    loadSchedules();
+  }, [rooms]);
+
+  // Filter rooms based on filters
+  const filteredRooms = roomsWithBookings.filter((room) => {
+    if (filters.areas.length && !filters.areas.includes(room.Area)) return false;
+
+    if (filters.capacities.length) {
+      const ok = filters.capacities.some(
         (cap) => room.Capacity >= cap && room.Capacity < cap + 10
       );
-      if (!hasMatchingCapacity) return false;
+      if (!ok) return false;
     }
+
+    const bookings = room.bookings || [];
+    const range = getTimeRange();
+
+    const hasConflict = bookings.some((b: any) =>
+      isOverlapping(range.start, range.end, new Date(b.Time_Start), new Date(b.Time_End))
+    );
+
+    if (filters.roomStatus === 'available') return !hasConflict;
+    if (filters.roomStatus === 'occupied') return hasConflict;
 
     return true;
   });

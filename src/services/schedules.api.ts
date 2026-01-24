@@ -1,6 +1,6 @@
 import { setTimeToday } from "@/lib/helpers";
 import axiosConfig from "./axios";
-import type { Schedule, Meeting } from "@/types";
+import type { Schedule } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -40,9 +40,9 @@ export const scheduleAPI = {
   },
 
   getMySchedule: async (
-    factory: string = "LYV",
+    factory: string,
     userId: string,
-  ): Promise<Meeting[]> => {
+  ): Promise<Schedule[]> => {
     try {
       const response = await axiosConfig.get(
         `${API_URL}/bookmeeting/${factory}/${userId}/getmyschedule`,

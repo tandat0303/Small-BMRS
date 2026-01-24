@@ -19,7 +19,7 @@ export const formatTimeRange = (start: string, end: string) => {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return `${pad(s.getHours())}:${pad(s.getMinutes())} – ${pad(
-    e.getHours()
+    e.getHours(),
   )}:${pad(e.getMinutes())}`;
 };
 
@@ -33,7 +33,7 @@ export const getMeetingStatus = (start: string, end: string) => {
   return "ended";
 };
 
-const formatDate = (iso: string) => {
+export const formatDate = (iso: string) => {
   const d = new Date(iso);
 
   const year = d.getFullYear();
@@ -44,9 +44,9 @@ const formatDate = (iso: string) => {
 };
 
 const formatTime = (iso: string) => {
-  const localIso = iso.replace('Z', '').split('+')[0];
+  const localIso = iso.replace("Z", "").split("+")[0];
   const d = new Date(localIso);
-  
+
   const hours = d.getHours();
   const minutes = d.getMinutes();
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
@@ -63,8 +63,46 @@ export function setTimeToday(hour, minute = 0) {
     now.getMonth(),
     now.getDate(),
     hour,
-    minute
+    minute,
   ).toISOString();
 }
 
+export const formatLocalDate = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
 
+export const dayNames: { [key: string]: string } = {
+  monday: "thứ hai",
+  tuesday: "thứ ba",
+  wednesday: "thứ tư",
+  thursday: "thứ năm",
+  friday: "thứ sáu",
+  saturday: "thứ bảy",
+};
+
+export const isOverlapping = (
+  aStart: Date,
+  aEnd: Date,
+  bStart: Date,
+  bEnd: Date,
+) => aStart < bEnd && aEnd > bStart;
+
+export const isUpcoming = (startTime: string) => {
+  const startDate = new Date(startTime.replace('Z', ''));
+  const now = new Date();
+  return startDate > now;
+};
+
+export const formatDateTime = (dateTimeStr: string) => {
+  const [datePart, timePart] = dateTimeStr.split('T');
+  const [year, month, day] = datePart.split('-');
+  const [hour, minute] = timePart.split(':');
+  
+  return {
+    date: `${day}/${month}/${year}`,
+    time: `${hour}:${minute}`,
+  };
+};

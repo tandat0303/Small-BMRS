@@ -13,22 +13,6 @@ export interface Room {
   isHideArea: number | null;
   isHideRoom: number | null;
 }
-
-export interface Meeting {
-  ID_Schedule: number;
-  ID_Room: number;
-  Room_Name: string;
-  Area: string;
-  Start_Time: string;
-  End_Time: string;
-  Meeting_Name: string;
-  Department: string;
-  Host_Name: string;
-  Host_ID: string;
-  Status: string;
-  Created_Date: string;
-}
-
 export interface FilterState {
   dateRange: {
     start: string | null;
@@ -36,7 +20,12 @@ export interface FilterState {
   };
   areas: string[];
   capacities: number[];
-  roomStatus: "all" | "available" | "occupied";
+  roomStatus: "available" | "occupied" | null;
+  timeFilter: {
+    mode: 'allDay' | 'range' | null;
+    startDateTime: string | null;
+    endDateTime: string | null;
+  }
 }
 
 export interface BookingFormData {
@@ -58,6 +47,7 @@ export interface Schedule {
   ID_Schedule: number;
   ID_Room: number;
   ID_User: string;
+  imageRoom: string;
   Topic: string;
   Purpose: string;
   Time_Start: string;

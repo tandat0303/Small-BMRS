@@ -15,6 +15,11 @@ const Home = () => {
     areas: [],
     capacities: [],
     roomStatus: 'all',
+    timeFilter: {
+      mode: null,
+      startDateTime: null,
+      endDateTime: null,
+    }
   });
 
   return (
@@ -64,7 +69,7 @@ const Home = () => {
         </div>
 
         {/* Filters Sidebar */}
-        <div className="order-1 lg:order-2 bg-white lg:bg-transparent">
+        <div className="order-1 lg:order-2 h-full bg-white lg:bg-transparent">
           <Filters filters={filters} setFilters={setFilters} />
         </div>
       </div>

@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, Calendar as CalendarIcon } from "lucide-react";
-import type { Room } from "../types";
-import { roomAPI } from "@/services/rooms.api";
+import type { Room } from "@/types";
 import storage from "@/lib/storage";
-import { timeToMinutes, getDaysInMonth } from "@/lib/helpers";
+import { timeToMinutes, getDaysInMonth, formatLocalDate, dayNames } from "@/lib/helpers";
+import { roomAPI } from "@/services/rooms.api";
+
 interface BookingModalProps {
   room: Room;
   onClose: () => void;
 }
 
 const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     startDate: "",
     endDate: "",
@@ -31,8 +33,29 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   const [showDaysDropdown, setShowDaysDropdown] = useState(false);
   const [selectingDate, setSelectingDate] = useState<"start" | "end">("start");
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const hoursScrollRef = useRef<HTMLDivElement>(null);
+  const minutesScrollRef = useRef<HTMLDivElement>(null);
 
-  const user = JSON.parse(storage.get("user"));
+  // Focus trap: lock focus inside modal when it opens
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    // Lock body scroll
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [onClose]);
+
+  const user = JSON.parse(storage.get("user") || "{}");
   const nameVal = `${user.fullName} ${user.level === "0" ? "- VPCT 業務室" : ""}`;
 
   const isInRange = (date: string) =>
@@ -108,6 +131,19 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     });
   };
 
+  const handleClearDateTime = () => {
+    setFormData((p) => ({
+      ...p,
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      endTime: "",
+      daysOfWeek: [],
+    }));
+
+    setSelectingDate("start");
+  };
+
   const removeDayOfWeek = (day: string) => {
     setFormData({
       ...formData,
@@ -115,70 +151,63 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     });
   };
 
-  const dayNames: { [key: string]: string } = {
-    monday: "thứ hai",
-    tuesday: "thứ ba",
-    wednesday: "thứ tư",
-    thursday: "thứ năm",
-    friday: "thứ sáu",
-    saturday: "thứ bảy",
-  };
-
   const handleDateSelect = (day: number) => {
     const y = currentMonth.getFullYear();
     const m = currentMonth.getMonth();
-    const selected = new Date(y, m, day).toISOString().split("T")[0];
+    const selectedDateObj = new Date(y, m, day);
+    const selected = formatLocalDate(selectedDateObj);
+
+    const today = formatLocalDate(new Date());
 
     if (selectingDate === "start") {
+      if (selected < today) return;
       setFormData((p) => ({
         ...p,
         startDate: selected,
-        endDate: p.endDate && p.endDate < selected ? "" : p.endDate,
+        endDate: selected,
       }));
     } else {
+      if (!formData.startDate) return;
       if (selected < formData.startDate) return;
       setFormData((p) => ({ ...p, endDate: selected }));
     }
   };
 
-  // const handleTimeSelect = (hour: number, minute: number) => {
-  //   const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
-
-  //   if (selectingDate === "start") {
-  //     setFormData({ ...formData, startTime: time });
-  //   } else {
-  //     setFormData({ ...formData, endTime: time });
-  //   }
-  // };
-
   const renderCalendar = () => {
     const { days, start } = getDaysInMonth(currentMonth);
     const cells = [];
+    const monthName = currentMonth.toLocaleString("vi-VN", {
+      month: "short",
+      year: "numeric",
+    });
 
     for (let i = 0; i < start; i++) cells.push(<div key={`e-${i}`} />);
 
     for (let d = 1; d <= days; d++) {
-      const date = new Date(
+      const dateObj = new Date(
         currentMonth.getFullYear(),
         currentMonth.getMonth(),
         d,
-      )
-        .toISOString()
-        .split("T")[0];
+      );
+      const date = formatLocalDate(dateObj);
 
       const isStart = date === formData.startDate;
       const isEnd = date === formData.endDate;
-      const disabled = selectingDate === "end" && date < formData.startDate;
+      const today = formatLocalDate(new Date());
+
+      const disabled =
+        (selectingDate === "start" && date < today) ||
+        (selectingDate === "end" && date < formData.startDate);
 
       cells.push(
         <button
           key={d}
           disabled={disabled}
           onClick={() => handleDateSelect(d)}
-          className={`text-xs py-1 rounded
+          className={`text-xs py-1.5 rounded font-medium
             ${isStart || isEnd ? "bg-blue-500 text-white" : ""}
             ${isInRange(date) ? "bg-blue-100 text-blue-700" : ""}
-            ${disabled ? "text-gray-300" : "hover:bg-gray-100"}
+            ${disabled ? "text-gray-300 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700"}
           `}
         >
           {d}
@@ -186,98 +215,254 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       );
     }
 
-    return <div className="grid grid-cols-7 gap-1">{cells}</div>;
+    const dayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+    return (
+      <div className="w-56">
+        {/* Month header with navigation */}
+        <div className="flex items-center justify-between mb-4 px-2">
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentMonth(
+                new Date(
+                  currentMonth.getFullYear(),
+                  currentMonth.getMonth() - 1,
+                ),
+              )
+            }
+            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
+          >
+            &lt;&lt;
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentMonth(
+                new Date(
+                  currentMonth.getFullYear(),
+                  currentMonth.getMonth() - 1,
+                ),
+              )
+            }
+            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
+          >
+            &lt;
+          </button>
+          <span className="text-sm font-semibold text-gray-700 flex-1 text-center">
+            {monthName}
+          </span>
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentMonth(
+                new Date(
+                  currentMonth.getFullYear(),
+                  currentMonth.getMonth() + 1,
+                ),
+              )
+            }
+            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
+          >
+            &gt;
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentMonth(
+                new Date(
+                  currentMonth.getFullYear(),
+                  currentMonth.getMonth() + 1,
+                ),
+              )
+            }
+            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
+          >
+            &gt;&gt;
+          </button>
+        </div>
+
+        {/* Day labels */}
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {dayLabels.map((day) => (
+            <div
+              key={day}
+              className="text-xs font-semibold text-gray-600 text-center py-1"
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div className="grid grid-cols-7 gap-1">{cells}</div>
+      </div>
+    );
   };
 
   const renderTime = () => {
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const isToday = formData.startDate === formatLocalDate(new Date());
+
     const hours = Array.from({ length: 16 }, (_, i) => i + 7);
-    const minutes = [0, 15, 30, 45];
+    const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
     const startMin = formData.startTime
       ? timeToMinutes(formData.startTime)
       : null;
 
     const current =
       selectingDate === "start" ? formData.startTime : formData.endTime;
-    const hour = current ? Number(current.split(":")[0]) : 7;
+    const currentHour = current ? Number(current.split(":")[0]) : 7;
+    const currentMinute = current ? Number(current.split(":")[1]) : 0;
 
     return (
-      <div className="space-y-2">
-        <div className="grid grid-cols-4 gap-1">
-          {hours.map((h) => {
-            const disabled =
-              selectingDate === "end" && startMin !== null && h * 60 < startMin;
+      <div className="flex gap-6 h-80 ml-6 border-l border-gray-300 pl-6">
+        {/* Hours List */}
+        <div className="flex flex-col w-16">
+          <h3 className="text-xs font-semibold text-gray-600 mb-2 text-center">
+            Hours
+          </h3>
+          <div
+            ref={hoursScrollRef}
+            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded"
+          >
+            <div className="flex flex-col gap-1">
+              {hours.map((h) => {
+                const hourMin = h * 60;
 
-            return (
-              <button
-                key={h}
-                disabled={disabled}
-                onClick={() =>
-                  setFormData((p) => ({
-                    ...p,
-                    [selectingDate === "start" ? "startTime" : "endTime"]:
-                      `${h.toString().padStart(2, "0")}:00`,
-                  }))
-                }
-                className={`text-xs py-1 rounded ${
-                  disabled
-                    ? "bg-gray-100 text-gray-400"
-                    : "border hover:bg-gray-100"
-                }`}
-              >
-                {h.toString().padStart(2, "0")}
-              </button>
-            );
-          })}
+                const afterWorkHour = h >= 17;
+
+                const disabled =
+                  afterWorkHour ||
+                  (selectingDate === "end" &&
+                    startMin !== null &&
+                    hourMin < startMin) ||
+                  (selectingDate === "start" &&
+                    isToday &&
+                    hourMin < nowMinutes);
+
+                const isSelected =
+                  current && Number(current.split(":")[0]) === h;
+
+                return (
+                  <button
+                    key={h}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() =>
+                      setFormData((p) => ({
+                        ...p,
+                        [selectingDate === "start" ? "startTime" : "endTime"]:
+                          `${h.toString().padStart(2, "0")}:${currentMinute
+                            .toString()
+                            .padStart(2, "0")}`,
+                      }))
+                    }
+                    className={`py-2 px-2 text-sm rounded font-medium transition-all duration-150 text-center ${
+                      isSelected
+                        ? "bg-blue-500 text-white shadow-md"
+                        : disabled
+                          ? "text-gray-300 cursor-not-allowed"
+                          : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    {h.toString().padStart(2, "0")}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-1">
-          {minutes.map((m) => {
-            const disabled =
-              selectingDate === "end" &&
-              startMin !== null &&
-              hour * 60 + m < startMin;
+        {/* Minutes List */}
+        <div className="flex flex-col w-16">
+          <h3 className="text-xs font-semibold text-gray-600 mb-2 text-center">
+            Minutes
+          </h3>
+          <div
+            ref={minutesScrollRef}
+            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded"
+          >
+            <div className="flex flex-col gap-1">
+              {minutes.map((m) => {
+                const totalMin = currentHour * 60 + m;
 
-            return (
-              <button
-                key={m}
-                disabled={disabled}
-                onClick={() =>
-                  setFormData((p) => ({
-                    ...p,
-                    [selectingDate === "start" ? "startTime" : "endTime"]:
-                      `${hour.toString().padStart(2, "0")}:${m
-                        .toString()
-                        .padStart(2, "0")}`,
-                  }))
-                }
-                className={`text-xs py-1 rounded ${
-                  disabled
-                    ? "bg-gray-100 text-gray-400"
-                    : "border hover:bg-gray-100"
-                }`}
-              >
-                :{m.toString().padStart(2, "0")}
-              </button>
-            );
-          })}
+                const afterWorkHour = currentHour >= 17;
+
+                const disabled =
+                  afterWorkHour ||
+                  (selectingDate === "end" &&
+                    startMin !== null &&
+                    totalMin < startMin) ||
+                  (selectingDate === "start" &&
+                    isToday &&
+                    totalMin < nowMinutes);
+
+                const isSelected =
+                  current &&
+                  Number(current.split(":")[0]) === currentHour &&
+                  Number(current.split(":")[1]) === m;
+
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() =>
+                      setFormData((p) => ({
+                        ...p,
+                        [selectingDate === "start" ? "startTime" : "endTime"]:
+                          `${currentHour.toString().padStart(2, "0")}:${m
+                            .toString()
+                            .padStart(2, "0")}`,
+                      }))
+                    }
+                    className={`py-2 px-2 text-sm rounded font-medium transition-all duration-150 text-center ${
+                      isSelected
+                        ? "bg-blue-500 text-white shadow-md"
+                        : disabled
+                          ? "text-gray-300 cursor-not-allowed"
+                          : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    {m.toString().padStart(2, "0")}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     );
   };
 
+  const isDateTimeValid =
+    formData.startDate &&
+    formData.startTime &&
+    formData.endDate &&
+    formData.endTime;
+
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="bg-white w-full max-w-xl shadow-2xl rounded-lg"
+        ref={modalRef}
+        className="bg-white w-full max-w-md shadow-2xl rounded-lg"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between rounded-t-lg">
           <h2 className="text-base font-semibold text-gray-900">
-            Đặt lịch {room.Name} | {room.Area}
+            Đặt lịch{" "}
+            <span className="font-bold">
+              {room.Name} | {room.Area}
+            </span>
           </h2>
           <button
             onClick={onClose}
@@ -358,107 +543,140 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
 
-          {/* Date Time Picker with Split Input */}
-          {/* <div className="relative">
-            <div className="relative flex border border-red-400 rounded overflow-hidden">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectingDate("start");
-                  setShowCalendar(true);
-                }}
-                className={`flex-1 px-2 py-1.5 text-left text-xs transition-colors ${
-                  selectingDate === "start"
-                    ? "border-b-2 border-blue-500 bg-blue-50/30"
-                    : ""
-                }`}
-              >
-                <span className="text-gray-400 text-[10px]">Bắt đầu</span>
-                <div className="text-gray-900 mt-0.5 text-xs font-medium">
-                  {formData.startDate || "____-__-__"}{" "}
-                  {formData.startTime && `${formData.startTime}`}
-                </div>
-              </button>
-
-              <div className="flex items-center px-1.5 text-gray-400 text-sm">
-                →
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectingDate("end");
-                  setShowCalendar(true);
-                }}
-                className={`flex-1 px-2 py-1.5 text-left text-xs transition-colors ${
-                  selectingDate === "end"
-                    ? "border-b-2 border-blue-500 bg-blue-50/30"
-                    : ""
-                }`}
-              >
-                <span className="text-gray-400 text-[10px]">Kết thúc</span>
-                <div className="text-gray-900 mt-0.5 text-xs font-medium">
-                  {formData.endDate || "____-__-__"}{" "}
-                  {formData.endTime && `${formData.endTime}`}
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowCalendar(!showCalendar)}
-                className="px-2 text-gray-400 hover:text-gray-600 flex items-center"
-              >
-                <CalendarIcon className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            {showCalendar && renderCalendar()}
-          </div> */}
-
           {/* DateTime */}
-          <button
-            type="button"
-            onClick={() => setShowCalendar(true)}
-            className="w-full border px-3 py-2 text-left rounded"
-          >
-            <CalendarIcon className="inline w-4 h-4 mr-2" />
-            {formData.startDate
-              ? `${formData.startDate} ${formData.startTime} → ${formData.endDate} ${formData.endTime}`
-              : "Chọn ngày & giờ"}
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowCalendar(true)}
+              className="w-full border px-3 py-2 rounded pr-10 flex items-center"
+            >
+              <CalendarIcon className="w-4 h-4 mr-3 text-gray-500 shrink-0" />
 
+              {!formData.startDate ? (
+                <span className="text-gray-400 text-sm">Chọn ngày & giờ</span>
+              ) : (
+                <div className="flex items-center w-full text-sm font-medium text-gray-700">
+                  {/* START */}
+                  <span className="whitespace-nowrap">
+                    {formData.startDate} {formData.startTime}
+                  </span>
+
+                  {/* ARROW CENTER */}
+                  <span className="flex-1 text-center text-gray-400 font-normal">
+                    →
+                  </span>
+
+                  {/* END */}
+                  <span className="whitespace-nowrap text-right">
+                    {formData.endDate} {formData.endTime}
+                  </span>
+                </div>
+              )}
+            </button>
+            {formData.startDate && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClearDateTime();
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2
+                          w-6 h-6 flex items-center justify-center
+                          rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
           {/* Animated dropdown */}
           {showCalendar && (
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[9999]">
-              <div className="bg-white rounded-xl p-4 w-[420px] animate-in zoom-in-95 fade-in duration-200">
-                <div className="flex gap-2 mb-2">
-                  {["start", "end"].map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setSelectingDate(t as any)}
-                      className={`flex-1 py-1 rounded ${
-                        selectingDate === t
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      {t === "start" ? "Bắt đầu" : "Kết thúc"}
-                    </button>
-                  ))}
+            <div 
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[9999]"
+              onClick={() => setShowCalendar(false)}
+            >
+              <div className="bg-white rounded-lg p-5 animate-in zoom-in-95 fade-in duration-200 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Tab Selection */}
+                <div className="flex gap-2 mb-4">
+                  {["start", "end"].map((t) => {
+                    const isEnd = t === "end";
+                    const disableEnd = isEnd && !formData.startDate;
+
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        disabled={disableEnd}
+                        onClick={() =>
+                          !disableEnd && setSelectingDate(t as any)
+                        }
+                        className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors
+                          ${
+                            selectingDate === t
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }
+                          ${disableEnd ? "opacity-40 cursor-not-allowed" : ""}
+                        `}
+                      >
+                        {t === "start" ? "Bắt đầu" : "Kết thúc"}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div className="flex gap-2">
-                  <div className="w-56">{renderCalendar()}</div>
-                  <div className="flex-1 border-l pl-2">{renderTime()}</div>
+                {/* Calendar and Time Picker */}
+                <div className="flex gap-4">
+                  {renderCalendar()}
+                  {renderTime()}
                 </div>
 
-                <div className="flex justify-end mt-3">
+                {/* Selected Time Display */}
+                <div className="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
+                  {formData.startDate &&
+                    formData.startTime &&
+                    formData.endDate &&
+                    formData.endTime && (
+                      <div className="text-gray-700 font-medium">
+                        {formData.startDate} {formData.startTime} →{" "}
+                        {formData.endDate} {formData.endTime}
+                      </div>
+                    )}
+                </div>
+
+                <div className="flex justify-between items-center mt-4">
                   <button
                     type="button"
-                    onClick={() => setShowCalendar(false)}
-                    className="px-4 py-1 bg-blue-500 text-white rounded"
+                    onClick={handleClearDateTime}
+                    className="px-4 py-2 text-sm rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                   >
-                    OK
+                    Clear
                   </button>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowCalendar(false)}
+                      className="px-5 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!isDateTimeValid}
+                      onClick={() => isDateTimeValid && setShowCalendar(false)}
+                      className={`px-5 py-2 rounded text-sm transition-colors
+                        ${
+                          isDateTimeValid
+                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }
+                      `}
+                    >
+                      OK
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -541,13 +759,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded font-medium transition-colors disabled:bg-blue-300 text-sm"
-          >
-            {loading ? "Đang xử lý..." : "Nhấn để đặt phòng"}
-          </button>
+          <div className="justify-center pt-2 flex">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-fit bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded font-medium transition-colors disabled:bg-blue-300 text-sm"
+            >
+              {loading ? "Đang xử lý..." : "Nhấn để đặt phòng"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
