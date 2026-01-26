@@ -36,8 +36,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
     new Date().toISOString().split("T")[0],
   );
   const [modalBookings, setModalBookings] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [filteredBookings, setFilteredBookings] = useState<any[]>([]);
 
   // Fetch today's bookings for the card display
   useEffect(() => {
@@ -147,11 +145,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
       fetchModalSchedule();
     }
   }, [room.ID_Room, selectedDate, showDetailsModal]);
-
-  // Update filteredBookings when modalBookings change
-  useEffect(() => {
-    setFilteredBookings(modalBookings);
-  }, [modalBookings]);
 
   // Close popover when clicking outside
   useEffect(() => {
