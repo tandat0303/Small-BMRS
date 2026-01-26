@@ -5,38 +5,42 @@ import type { Schedule } from "@/types";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const scheduleAPI = {
-  getAllSchedulesOfRoom: async (roomId: number, date?: string): Promise<Schedule[]> => {
+  getAllSchedulesOfRoom: async (
+    roomId: number,
+    date?: string,
+  ): Promise<Schedule[]> => {
     try {
       const selectedDate = date || new Date().toISOString();
-        const res = await axiosConfig.post(
-            `${API_URL}/bookmeeting/${roomId}/getschedule`, {
-              date: selectedDate,
-            }
-        );
-        return res.data;
+      const res = await axiosConfig.post(
+        `${API_URL}/bookmeeting/${roomId}/getschedule`,
+        {
+          date: selectedDate,
+        },
+      );
+      return res.data;
     } catch (error) {
-        console.log("Lỗi khi lấy danh sách lịch trình", error);
-        throw error;
+      console.log("Lỗi khi lấy danh sách lịch trình", error);
+      throw error;
     }
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getTodaySchedules: async (factory: string, datestart?: string, dateend?: string): Promise<Schedule[]> => {
+  getTodaySchedules: async (factory: string): Promise<Schedule[]> => {
     const startTimeISO = setTimeToday(7);
     const endTimeISO = setTimeToday(17);
 
     try {
       const res = await axiosConfig.post(
-        `${API_URL}/bookmeeting/${factory}/getschedulesearch`, {
+        `${API_URL}/bookmeeting/${factory}/getschedulesearch`,
+        {
           datestart: startTimeISO,
           dateend: endTimeISO,
-        }
+        },
       );
 
       return res.data;
     } catch (error) {
-        console.log("Lỗi khi lấy danh sách lịch trình", error);
-        throw error;
+      console.log("Lỗi khi lấy danh sách lịch trình", error);
+      throw error;
     }
   },
 
