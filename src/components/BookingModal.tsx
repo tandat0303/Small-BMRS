@@ -445,13 +445,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
       onClick={onClose}
       role="presentation"
     >
       <div
         ref={modalRef}
-        className="bg-white w-full max-w-md shadow-2xl rounded-lg"
+        className="bg-white w-full max-w-md shadow-2xl rounded-lg relative z-10"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

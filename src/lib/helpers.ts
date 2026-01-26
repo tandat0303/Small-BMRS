@@ -106,3 +106,23 @@ export const formatDateTime = (dateTimeStr: string) => {
     time: `${hour}:${minute}`,
   };
 };
+
+export const formatRangeLabel = (startISO: string, endISO: string) => {
+  const start = new Date(startISO);
+  const end = new Date(endISO);
+
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const sameMonth = start.getMonth() === end.getMonth() && sameYear;
+
+  const timeStr = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+  if (sameMonth) {
+    return `${start.getDate()} - ${end.getDate()}/${start.getMonth() + 1}/${start.getFullYear()}, ${timeStr}`;
+  }
+
+  if (sameYear) {
+    return `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}/${start.getFullYear()}, ${timeStr}`;
+  }
+
+  return `${start.getDate()}/${start.getMonth() + 1}/${start.getFullYear()} - ${end.getDate()}/${end.getMonth() + 1}/${end.getFullYear()}, ${timeStr}`;
+};

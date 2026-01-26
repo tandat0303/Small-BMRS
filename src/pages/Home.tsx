@@ -14,7 +14,7 @@ const Home = () => {
     },
     areas: [],
     capacities: [],
-    roomStatus: 'all',
+    roomStatus: null,
     timeFilter: {
       mode: null,
       startDateTime: null,
@@ -23,14 +23,14 @@ const Home = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col overflow-hidden">
       <Header />
       
-      <div className="flex flex-col lg:flex-row">
-        {/* Main Content */}
-        <div className="flex-1 order-2 lg:order-1">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Main Content - Scrollable */}
+        <div className="flex-1 order-2 lg:order-1 flex flex-col overflow-hidden">
           {/* Tabs */}
-          <div className="bg-white border-b border-gray-200 shadow-sm sticky top-16 sm:top-20 z-10">
+          <div className="bg-white border-b border-gray-200 shadow-sm flex-shrink-0 z-10">
             <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
               <div className="flex justify-center gap-2 sm:gap-4 md:gap-8 overflow-x-auto">
                 <button
@@ -57,19 +57,22 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
-            <div className="animate-fadeIn">
-              {activeTab === 'home' ? (
-                <RoomList filters={filters} />
-              ) : (
-                <BookingHistory />
-              )}
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto scrollbar-hide">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+              <div className="animate-fadeIn">
+                {activeTab === 'home' ? (
+                  <RoomList filters={filters} />
+                ) : (
+                  <BookingHistory />
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Filters Sidebar */}
-        <div className="order-1 lg:order-2 h-full bg-white lg:bg-transparent">
+        {/* Filters Sidebar - Fixed/Non-scrollable */}
+        <div className="order-1 lg:order-2 flex-shrink-0 bg-white lg:bg-transparent overflow-hidden">
           <Filters filters={filters} setFilters={setFilters} />
         </div>
       </div>

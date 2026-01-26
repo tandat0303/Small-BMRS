@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { Filter } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Filter, RefreshCcw } from "lucide-react";
 import type { FilterState } from "../types";
 import { AnimatePresence, motion } from "framer-motion";
+import { formatRangeLabel } from "@/lib/helpers";
 
 interface FilterProps {
   filters: FilterState;
@@ -15,6 +16,8 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
+
+  const timeRangeRef = useRef<HTMLDivElement>(null);
 
   const areas = ["TTKTM - 開發中心", "VP2 - 廠務室", "VPCT"];
   const capacities = [5, 10, 50, 100, 200];
@@ -47,15 +50,38 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
     });
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        timeRangeRef.current &&
+        timeRangeRef.current.contains(event.target as Node)
+      ) {
+        setShowDateModal(false);
+      }
+    };
+
+    if (showDateModal) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showDateModal]);
+
+  const isTimeFilterActive =
+    filters.timeFilter.mode === "allDay" ||
+    (filters.timeFilter.mode === "range" &&
+      filters.timeFilter.startDateTime &&
+      filters.timeFilter.endDateTime);
+
   const hasActiveFilters =
     filters.areas.length > 0 ||
     filters.capacities.length > 0 ||
     filters.roomStatus != null ||
-    filters.timeFilter.mode != null;
+    isTimeFilterActive;
 
   return (
-    <aside className="w-full md:w-80 bg-white border-l border-gray-200 p-4 sm:p-6 overflow-y-auto h-full">
-      <div className="flex items-center justify-between mb-6 gap-2">
+    <aside className="w-full md:w-90 bg-white border-l border-gray-200 p-4 sm:p-6 overflow-y-auto h-full">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Filter className="w-5 h-5 text-gray-700 flex-shrink-0" />
           <h2 className="text-base sm:text-lg font-semibold text-gray-900">
@@ -65,15 +91,15 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
+            className="text-sm text-blue-500 hover:text-blue-300 font-medium transition-colors"
           >
-            Xóa
+            <RefreshCcw className="w-5 h-5" />
           </button>
         )}
       </div>
 
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Thời gian</h3>
+      <div className="mb-5">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">Thời gian</h3>
 
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -90,10 +116,10 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
                       },
               }))
             }
-            className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors cursor-pointer ${
+            className={`px-3 py-2 text-sm rounded border transition-colors cursor-pointer ${
               filters.timeFilter.mode === "allDay"
-                ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                ? "bg-blue-50 border-blue-500 text-blue-700"
+                : "border-gray-300 text-gray-600 hover:bg-gray-50"
             }`}
           >
             Cả ngày
@@ -109,43 +135,46 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
                     : { ...p.timeFilter, mode: "range" },
               }))
             }
-            className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors cursor-pointer ${
+            className={`px-3 py-2 text-sm rounded border transition-colors cursor-pointer ${
               filters.timeFilter.mode === "range"
-                ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                ? "bg-blue-50 border-blue-500 text-blue-700"
+                : "border-gray-300 text-gray-600 hover:bg-gray-50"
             }`}
           >
-            Thời gian
+            Khoảng thời gian
           </button>
         </div>
 
-        {/* DateTime Picker khi chọn range */}
         {filters.timeFilter.mode === "range" && (
           <div
             onClick={() => setShowDateModal(true)}
-            className="px-3 py-2.5 text-xs sm:text-sm rounded-sm border transition-colors mt-2 border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer"
+            className="px-3 py-2 text-sm rounded border transition-colors mt-2 border-gray-300 text-gray-600 hover:bg-gray-50 cursor-pointer"
+            ref={timeRangeRef}
           >
-            {filters.timeFilter.startDateTime
-              ? `${new Date(filters.timeFilter.startDateTime).toLocaleString()} → ${new Date(
-                  filters.timeFilter.endDateTime!,
-                ).toLocaleString()}`
-              : <span className="ml-1">Chọn ngày & giờ</span>}
+            {filters.timeFilter.startDateTime ? (
+              formatRangeLabel(
+                filters.timeFilter.startDateTime,
+                filters.timeFilter.endDateTime!,
+              )
+            ) : (
+              <span className="ml-1">Chọn ngày & giờ</span>
+            )}
           </div>
         )}
       </div>
 
       {/* Area Filter */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Khu vực</h3>
-        <div className="space-y-2">
+      <div className="mb-5">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">Khu vực</h3>
+        <div className="grid grid-cols-2 gap-2">
           {areas.map((area) => (
             <button
               key={area}
               onClick={() => toggleArea(area)}
-              className={`w-full px-3 py-2.5 text-xs sm:text-sm text-left rounded-lg border transition-colors cursor-pointer ${
+              className={`w-full px-3 py-2 text-sm text-center rounded border transition-colors cursor-pointer ${
                 filters.areas.includes(area)
-                  ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  ? "bg-blue-50 border-blue-500 text-blue-700"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
               {area}
@@ -155,17 +184,17 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
       </div>
 
       {/* Capacity Filter */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Sức chứa</h3>
+      <div className="mb-5">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">Sức chứa</h3>
         <div className="grid grid-cols-2 gap-2">
           {capacities.map((capacity) => (
             <button
               key={capacity}
               onClick={() => toggleCapacity(capacity)}
-              className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors cursor-pointer ${
+              className={`px-3 py-2 text-sm rounded border transition-colors cursor-pointer ${
                 filters.capacities.includes(capacity)
-                  ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  ? "bg-blue-50 border-blue-500 text-blue-700"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
               {capacity}
@@ -176,7 +205,7 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
 
       {/* Room Status Filter */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">
           Trạng thái phòng họp
         </h3>
         <div className="grid grid-cols-2 gap-2">
@@ -187,10 +216,10 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
                 roomStatus: p.roomStatus === "available" ? null : "available",
               }))
             }
-            className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors cursor-pointer ${
+            className={`px-3 py-2 text-sm rounded border transition-colors cursor-pointer ${
               filters.roomStatus === "available"
-                ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                ? "bg-blue-50 border-blue-500 text-blue-700"
+                : "border-gray-300 text-gray-600 hover:bg-gray-50"
             }`}
           >
             Trống
@@ -202,10 +231,10 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
                 roomStatus: p.roomStatus === "occupied" ? null : "occupied",
               }))
             }
-            className={`px-3 py-2.5 text-xs sm:text-sm rounded-lg border transition-colors cursor-pointer ${
+            className={`px-3 py-2 text-sm rounded border transition-colors cursor-pointer ${
               filters.roomStatus === "occupied"
-                ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                ? "bg-blue-50 border-blue-500 text-blue-700"
+                : "border-gray-300 text-gray-600 hover:bg-gray-50"
             }`}
           >
             Có lịch
@@ -222,7 +251,6 @@ const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            
             <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg w-[420px] p-5">
                 <h2 className="font-semibold mb-4">Chọn khoảng thời gian</h2>

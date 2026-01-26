@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, AlertTriangle, Eye, User, Clock, Calendar, Warehouse } from "lucide-react";
+import {
+  Users,
+  AlertTriangle,
+  Eye,
+  User,
+  Clock,
+  Calendar,
+  Warehouse,
+  X,
+} from "lucide-react";
 import type { Room } from "@/types";
 import BookingModal from "../components/BookingModal";
 import { scheduleAPI } from "@/services/schedules.api.ts";
@@ -181,9 +190,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
                 }}
               />
 
-              <div
-                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
-              >
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                 <Eye className="w-4 h-4 mr-1 text-white" />
                 <span className="text-white text-xs font-medium tracking-wide">
                   Preview
@@ -191,9 +198,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
               </div>
             </div>
 
-            <div
-              className="absolute bottom-2 right-2 flex items-center rounded-full px-2.5 py-1 text-xs bg-white/50 backdrop-opacity-75 border border-white/40 shadow-sm"
-            >
+            <div className="absolute bottom-2 right-2 flex items-center rounded-full px-2.5 py-1 text-xs bg-white/50 backdrop-opacity-75 border border-white/40 shadow-sm">
               <Users className="w-3.5 h-3.5 text-gray-700" />
 
               {/* separator */}
@@ -304,7 +309,12 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
               initial={{ scale: 0.7, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.7, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.3 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                duration: 0.3,
+              }}
             />
           </motion.div>
         )}
@@ -314,14 +324,26 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
       <AnimatePresence>
         {showBookingModal && (
           <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowDetailsModal(false)}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
           >
-            <BookingModal room={room} onClose={() => setShowBookingModal(false)} />
+            <motion.div
+              className="w-full max-w-2xl will-change-transform"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            >
+              <div className="bg-white rounded-xl shadow-2xl relative z-10 [backface-visibility:hidden]">
+                <BookingModal
+                  room={room}
+                  onClose={() => setShowBookingModal(false)}
+                />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -343,7 +365,12 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
               initial={{ scale: 0.8, y: 20, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.8, y: 20, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.4 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                duration: 0.4,
+              }}
             >
               {/* Header */}
               <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white">
@@ -354,7 +381,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
                   onClick={() => setShowDetailsModal(false)}
                   className="text-gray-400 hover:text-gray-600 text-2xl leading-none hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition"
                 >
-                  X
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -374,7 +401,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
                           className="w-auto border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                         />
                       </div>
-                      <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-sm text-sm font-medium shadow-sm transition whitespace-nowrap">
+                      <button
+                        className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-sm text-sm font-medium shadow-sm transition whitespace-nowrap"
+                        onClick={() => setShowBookingModal(true)}
+                      >
                         Nhấn để đặt phòng
                       </button>
                     </div>
@@ -424,7 +454,9 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
                         const topPosition =
                           (((startHour - 7) * 60 + startMin) / 60) * 40;
                         const duration =
-                          ((endHour * 60 + endMin - (startHour * 60 + startMin)) /
+                          ((endHour * 60 +
+                            endMin -
+                            (startHour * 60 + startMin)) /
                             60) *
                           40;
 
@@ -532,7 +564,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
                         <div className="text-center py-12">
                           <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                           <div className="text-gray-400 text-sm italic">
-                            Ngày này chưa có cuộc họp
+                            Hôm nay chưa có cuộc họp
                           </div>
                         </div>
                       )}

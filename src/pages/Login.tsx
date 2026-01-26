@@ -50,7 +50,7 @@ export default function Login() {
       } catch (error) {
         Swal.fire({
           title: "Đăng nhập thất bại!",
-          text: "Sai tài khoản hoặc mật khẩu",
+          text: "Sai tài khoản/mật khẩu hoặc nhà máy",
           icon: "error",
           confirmButtonText: "Đóng",
           confirmButtonColor: "#ff0000",
