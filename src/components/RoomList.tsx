@@ -18,7 +18,7 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
   const [roomsWithBookings, setRoomsWithBookings] = useState<any[]>([]);
 
   const user = JSON.parse(storage.get("user"));
-  
+
   useEffect(() => {
     fetchRooms();
   }, []);
@@ -77,9 +77,7 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
       return false;
 
     if (filters.capacities.length) {
-      const ok = filters.capacities.some(
-        (cap) => room.Capacity >= cap && room.Capacity < cap + 10,
-      );
+      const ok = filters.capacities.some((cap) => room.Capacity >= cap);
       if (!ok) return false;
     }
 

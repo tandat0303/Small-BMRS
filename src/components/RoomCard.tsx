@@ -36,6 +36,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
     new Date().toISOString().split("T")[0],
   );
   const [modalBookings, setModalBookings] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filteredBookings, setFilteredBookings] = useState<any[]>([]);
 
   // Fetch today's bookings for the card display
@@ -94,7 +95,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
     };
 
     fetchTodaySchedule();
-    const interval = setInterval(fetchTodaySchedule, 60000);
+    const interval = setInterval(fetchTodaySchedule, 300000);
     return () => clearInterval(interval);
   }, [room.ID_Room]);
 
@@ -412,7 +413,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
                     {/* Time slots */}
                     <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                       {Array.from({ length: 11 }, (_, i) => i + 7).map(
-                        (hour, index) => {
+                        (hour) => {
                           const timeStr = `${hour.toString().padStart(2, "0")}:00`;
 
                           return (

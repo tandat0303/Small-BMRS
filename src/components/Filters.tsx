@@ -1,13 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Filter, RefreshCcw } from "lucide-react";
-import type { FilterState } from "../types";
+import type { FilterProps } from "../types";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatRangeLabel } from "@/lib/helpers";
-
-interface FilterProps {
-  filters: FilterState;
-  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
-}
 
 const Filters: React.FC<FilterProps> = ({ filters, setFilters }) => {
   const [showDateModal, setShowDateModal] = useState(false);

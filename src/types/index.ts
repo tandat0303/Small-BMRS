@@ -13,6 +13,17 @@ export interface Room {
   isHideArea: number | null;
   isHideRoom: number | null;
 }
+
+export interface FilterProps {
+  filters: FilterState;
+  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+}
+
+export interface MobileFilterProps {
+  filters: FilterState;
+  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  onClose: () => void;
+}
 export interface FilterState {
   dateRange: {
     start: string | null;
@@ -26,6 +37,11 @@ export interface FilterState {
     startDateTime: string | null;
     endDateTime: string | null;
   }
+}
+
+export interface BookingModalProps {
+  room: Room;
+  onClose: () => void;
 }
 
 export interface BookingFormData {

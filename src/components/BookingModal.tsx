@@ -2,15 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { X, Calendar as CalendarIcon } from "lucide-react";
-import type { Room } from "@/types";
 import storage from "@/lib/storage";
 import { timeToMinutes, getDaysInMonth, formatLocalDate, dayNames } from "@/lib/helpers";
 import { roomAPI } from "@/services/rooms.api";
-
-interface BookingModalProps {
-  room: Room;
-  onClose: () => void;
-}
+import type { BookingModalProps } from "@/types";
 
 const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
