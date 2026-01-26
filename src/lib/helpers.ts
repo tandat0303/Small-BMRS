@@ -56,7 +56,7 @@ export const formatDateTimeRange = (start: string, end: string) => {
   return `${formatDate(start)} · ${formatTime(start)} - ${formatTime(end)}`;
 };
 
-export function setTimeToday(hour, minute = 0) {
+export function setTimeToday(hour: number | undefined, minute = 0) {
   const now = new Date();
   return new Date(
     now.getFullYear(),

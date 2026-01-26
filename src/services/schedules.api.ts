@@ -20,6 +20,7 @@ export const scheduleAPI = {
     }
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getTodaySchedules: async (factory: string, datestart?: string, dateend?: string): Promise<Schedule[]> => {
     const startTimeISO = setTimeToday(7);
     const endTimeISO = setTimeToday(17);
