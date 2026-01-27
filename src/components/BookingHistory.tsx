@@ -18,7 +18,7 @@ const BookingHistory: React.FC = () => {
   const [meetings, setMeetings] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewMeeting, setPreviewMeeting] = useState<Schedule | null>(null);
   const [activeFilter, setActiveFilter] = useState<
     "upcoming" | "completed" | "cancelled"
   >("upcoming");
@@ -145,6 +145,7 @@ const BookingHistory: React.FC = () => {
             const startDateTime = formatDateTime(meeting.Time_Start);
             const endDateTime = formatDateTime(meeting.Time_End);
             const upcoming = isUpcoming(meeting.Time_Start);
+            const imageURL = `${IMAGE_URL}/assets/${meeting.imageRoom}`;
 
             return (
               <div
@@ -155,10 +156,10 @@ const BookingHistory: React.FC = () => {
                   <div className="relative w-full sm:w-[200px] h-[140px]">
                     <div
                       className="w-full h-full bg-gray-100 rounded-lg overflow-hidden group cursor-pointer"
-                      onClick={() => setShowImagePreview(true)}
+                      onClick={() => setPreviewMeeting(meeting)}
                     >
                       <img
-                        src={`${IMAGE_URL}/assets/${meeting.imageRoom}`}
+                        src={imageURL || "/placeholder.svg"}
                         alt={meeting.Name}
                         className="w-full h-full object-cover group-hover:scale-105 transition"
                         onError={(e) => {
@@ -231,11 +232,11 @@ const BookingHistory: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Cancel Button - flex on mobile, absolute on desktop */}
+                    {/* Cancel Button - absolute on desktop */}
                     {upcoming && !meeting.Cancel && (
                       <button
                         onClick={() => handleCancel(meeting.ID_Schedule)}
-                        className="sm:absolute sm:top-3 sm:right-3 p-2 h-fit text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0"
+                        className="sm:absolute sm:top-3 sm:right-3 p-2 h-fit text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0 mt-3 sm:mt-0"
                         title="Hủy đặt phòng"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -257,48 +258,48 @@ const BookingHistory: React.FC = () => {
                       </span>
                     )}
                   </div>
-
-                  <AnimatePresence>
-                    {showImagePreview && (
-                      <motion.div
-                        className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-                        onClick={() => setShowImagePreview(false)}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <button
-                          onClick={() => setShowImagePreview(false)}
-                          className="absolute top-6 right-6 text-white bg-gray/40 hover:bg-gray/60 rounded-full p-2"
-                        >
-                          ✕
-                        </button>
-
-                        <motion.img
-                          src={`${IMAGE_URL}/assets/${meeting.imageRoom}`}
-                          alt={meeting.Name}
-                          className="max-w-full max-h-[90vh] rounded-lg shadow-xl"
-                          onClick={(e) => e.stopPropagation()}
-                          initial={{ scale: 0.7, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0.7, opacity: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 30,
-                            duration: 0.3,
-                          }}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
+      <AnimatePresence>
+        {previewMeeting && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+            onClick={() => setPreviewMeeting(null)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <button
+              onClick={() => setPreviewMeeting(null)}
+              className="absolute top-6 right-6 text-white bg-gray/40 hover:bg-gray/60 rounded-full p-2"
+            >
+              ✕
+            </button>
+
+            <motion.img
+              src={`${IMAGE_URL}/assets/${previewMeeting.imageRoom}`}
+              alt={previewMeeting.Name}
+              className="max-w-full max-h-[90vh] rounded-lg shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.7, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                duration: 0.3,
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

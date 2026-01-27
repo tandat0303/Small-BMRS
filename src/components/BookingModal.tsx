@@ -3,7 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { X, Calendar as CalendarIcon } from "lucide-react";
 import storage from "@/lib/storage";
-import { timeToMinutes, getDaysInMonth, formatLocalDate, dayNames } from "@/lib/helpers";
+import {
+  timeToMinutes,
+  getDaysInMonth,
+  formatLocalDate,
+  dayNames,
+} from "@/lib/helpers";
 import { roomAPI } from "@/services/rooms.api";
 import type { BookingModalProps } from "@/types";
 
@@ -499,7 +504,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           <input
             type="text"
             name="meetingName"
-            required
             value={formData.meetingName}
             onChange={handleChange}
             placeholder="Chủ đề cuộc họp"
@@ -585,11 +589,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           </div>
           {/* Animated dropdown */}
           {showCalendar && (
-            <div 
+            <div
               className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[9999]"
               onClick={() => setShowCalendar(false)}
             >
-              <div className="bg-white rounded-lg p-5 animate-in zoom-in-95 fade-in duration-200 shadow-2xl"
+              <div
+                className="bg-white rounded-lg p-5 animate-in zoom-in-95 fade-in duration-200 shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Tab Selection */}
@@ -664,8 +669,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                       className={`px-5 py-2 rounded text-sm transition-colors
                         ${
                           isDateTimeValid
-                            ? 'bg-blue-500 text-white hover:bg-blue-600'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            ? "bg-blue-500 text-white hover:bg-blue-600"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }
                       `}
                     >

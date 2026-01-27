@@ -91,16 +91,16 @@ export const isOverlapping = (
 ) => aStart < bEnd && aEnd > bStart;
 
 export const isUpcoming = (startTime: string) => {
-  const startDate = new Date(startTime.replace('Z', ''));
+  const startDate = new Date(startTime.replace("Z", ""));
   const now = new Date();
   return startDate > now;
 };
 
 export const formatDateTime = (dateTimeStr: string) => {
-  const [datePart, timePart] = dateTimeStr.split('T');
-  const [year, month, day] = datePart.split('-');
-  const [hour, minute] = timePart.split(':');
-  
+  const [datePart, timePart] = dateTimeStr.split("T");
+  const [year, month, day] = datePart.split("-");
+  const [hour, minute] = timePart.split(":");
+
   return {
     date: `${day}/${month}/${year}`,
     time: `${hour}:${minute}`,
@@ -113,8 +113,13 @@ export const formatRangeLabel = (startISO: string, endISO: string) => {
 
   const sameYear = start.getFullYear() === end.getFullYear();
   const sameMonth = start.getMonth() === end.getMonth() && sameYear;
+  const sameDay = start.getDay() === end.getDay() && sameMonth;
 
-  const timeStr = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  const timeStr = `${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+
+  if (sameDay) {
+    return `${start.getDate()}/${start.getMonth() + 1}/${start.getFullYear()}, ${timeStr}`;
+  }
 
   if (sameMonth) {
     return `${start.getDate()} - ${end.getDate()}/${start.getMonth() + 1}/${start.getFullYear()}, ${timeStr}`;

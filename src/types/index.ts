@@ -1,3 +1,11 @@
+export interface RoomListProps {
+  filters: FilterState;
+  rooms: Room[];
+  schedules: Schedule[];
+  loading: boolean;
+  error: string | null;
+}
+
 export interface Room {
   ID_Room: number;
   Name: string;
@@ -17,12 +25,16 @@ export interface Room {
 export interface FilterProps {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  onFactoryChange?: (factories: string[]) => void;
+  rooms?: Room[];
 }
 
 export interface MobileFilterProps {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   onClose: () => void;
+  onFactoryChange?: (factories: string[]) => void;
+  rooms?: Room[];
 }
 export interface FilterState {
   dateRange: {
@@ -33,10 +45,11 @@ export interface FilterState {
   capacities: number[];
   roomStatus: "available" | "occupied" | null;
   timeFilter: {
-    mode: 'allDay' | 'range' | null;
+    mode: "allDay" | "range" | null;
     startDateTime: string | null;
     endDateTime: string | null;
-  }
+  };
+  factories: string[];
 }
 
 export interface BookingModalProps {

@@ -1,64 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { Users } from "lucide-react";
-import type { Room, FilterState } from "../types";
-import { roomAPI } from "../services/rooms.api";
+import type { RoomListProps } from "../types";
 import RoomCard from "../components/RoomCard";
-import { scheduleAPI } from "@/services/schedules.api";
 import { isOverlapping } from "@/lib/helpers";
-import storage from "@/lib/storage";
 
-interface RoomListProps {
-  filters: FilterState;
-}
-
-const RoomList: React.FC<RoomListProps> = ({ filters }) => {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const RoomList: React.FC<RoomListProps> = ({
+  filters,
+  rooms,
+  schedules,
+  loading,
+  error,
+}) => {
   const [roomsWithBookings, setRoomsWithBookings] = useState<any[]>([]);
 
-  const user = JSON.parse(storage.get("user"));
-
   useEffect(() => {
-    fetchRooms();
-  }, []);
-
-  const fetchRooms = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await roomAPI.getAllRooms(user.factory);
-      setRooms(data);
-    } catch (err) {
-      setError("Đã xảy ra lỗi khi tải danh sách phòng");
-      console.error("Error fetching rooms:", err);
-    } finally {
-      setLoading(false);
+    if (!rooms.length) {
+      setRoomsWithBookings([]);
+      return;
     }
-  };
 
-  useEffect(() => {
-    if (!rooms.length) return;
-
-    const loadSchedules = async () => {
-      const results = await Promise.all(
-        rooms.map(async (room) => {
-          const schedules = await scheduleAPI.getAllSchedulesOfRoom(
-            room.ID_Room,
-          );
-          return {
-            ...room,
-            bookings: schedules.filter((b: any) => !b.Cancel),
-          };
-        }),
+    const results = rooms.map((room) => {
+      const roomSchedules = schedules.filter(
+        (schedule) => schedule.ID_Room === room.ID_Room && !schedule.Cancel,
       );
 
-      setRoomsWithBookings(results);
-    };
+      return {
+        ...room,
+        bookings: roomSchedules,
+      };
+    });
 
-    loadSchedules();
-  }, [rooms]);
+    setRoomsWithBookings(results);
+  }, [rooms, schedules]);
 
   let dayBase = new Date();
 
@@ -73,12 +46,23 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
   endOfDay.setHours(23, 59, 59, 999);
 
   const filteredRooms = roomsWithBookings.filter((room) => {
+    if (filters.factories && filters.factories.length > 0) {
+      if (!filters.factories.includes(room.Factory)) {
+        return false;
+      }
+    }
+
     if (filters.areas.length && !filters.areas.includes(room.Area))
       return false;
 
+    // if (filters.capacities.length) {
+    //   const ok = filters.capacities.some((cap) => room.Capacity >= cap);
+    //   if (!ok) return false;
+    // }
+
     if (filters.capacities.length) {
-      const ok = filters.capacities.some((cap) => room.Capacity >= cap);
-      if (!ok) return false;
+      const cap = filters.capacities[0];
+      if (room.Capacity < cap) return false;
     }
 
     const bookings = room.bookings || [];
@@ -118,6 +102,7 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
 
       if (filters.roomStatus === "available") return !hasMeeting;
       if (filters.roomStatus === "occupied") return hasMeeting;
+
       return hasMeeting;
     }
 
@@ -169,6 +154,7 @@ const RoomList: React.FC<RoomListProps> = ({ filters }) => {
 
       if (filters.roomStatus === "available") return !hasMeetingInSlot;
       if (filters.roomStatus === "occupied") return hasMeetingInSlot;
+
       return hasMeetingInSlot;
     }
 

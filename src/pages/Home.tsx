@@ -3,10 +3,11 @@ import Header from "../components/Header";
 import Filters from "../components/Filters";
 import RoomList from "../components/RoomList";
 import BookingHistory from "../components/BookingHistory";
-import type { FilterState } from "../types";
+import type { FilterState, Room, Schedule } from "../types";
 import { Filter } from "lucide-react";
 import MobileFilterModal from "@/components/MobileFilterModal";
 import { AnimatePresence, motion } from "framer-motion";
+import { factoryFilterAPI } from "@/services/factory.api";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState<"home" | "history">("home");
@@ -24,7 +25,37 @@ const Home = () => {
       startDateTime: null,
       endDateTime: null,
     },
+    factories: [],
   });
+
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFactoryChange = async (selectedFactories: string[]) => {
+    if (selectedFactories.length === 0) return;
+
+    const factory = selectedFactories[0];
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { rooms: fetchedRooms, schedules: fetchedSchedules } =
+        await factoryFilterAPI.getRoomDataByFactory(factory);
+
+      setRooms(fetchedRooms);
+      setSchedules(fetchedSchedules);
+    } catch (err) {
+      setError("Không thể tải dữ liệu phòng họp. Vui lòng thử lại.");
+
+      setRooms([]);
+      setSchedules([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col overflow-y-auto scrollbar-hide">
@@ -83,7 +114,13 @@ const Home = () => {
             <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
               <div className="animate-fadeIn">
                 {activeTab === "home" ? (
-                  <RoomList filters={filters} />
+                  <RoomList
+                    filters={filters}
+                    rooms={rooms}
+                    schedules={schedules}
+                    loading={loading}
+                    error={error}
+                  />
                 ) : (
                   <BookingHistory />
                 )}
@@ -95,7 +132,12 @@ const Home = () => {
         {/* Filters Sidebar - Fixed/Non-scrollable */}
         {activeTab === "home" && (
           <div className="order-1 lg:order-2 flex-shrink-0 bg-white lg:bg-transparent hidden lg:block">
-            <Filters filters={filters} setFilters={setFilters} />
+            <Filters
+              filters={filters}
+              setFilters={setFilters}
+              onFactoryChange={handleFactoryChange}
+              rooms={rooms}
+            />
           </div>
         )}
 
@@ -111,6 +153,8 @@ const Home = () => {
                 filters={filters}
                 setFilters={setFilters}
                 onClose={() => setShowMobileFilters(false)}
+                onFactoryChange={handleFactoryChange}
+                rooms={rooms}
               />
             </motion.div>
           )}
