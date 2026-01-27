@@ -27,6 +27,7 @@ export interface FilterProps {
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   onFactoryChange?: (factories: string[]) => void;
   rooms?: Room[];
+  disabled?: boolean;
 }
 
 export interface MobileFilterProps {

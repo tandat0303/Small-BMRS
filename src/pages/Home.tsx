@@ -33,6 +33,8 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const disabled = activeTab === "history";
+
   const handleFactoryChange = async (selectedFactories: string[]) => {
     if (selectedFactories.length === 0) return;
 
@@ -62,21 +64,25 @@ const Home = () => {
       <Header />
 
       {/* Mobile Filter Button */}
-      {activeTab === "home" && (
-        <header className="bg-white lg:hidden">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-end">
-              <button
-                onClick={() => setShowMobileFilters(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                <Filter className="w-5 h-5" />
-                <span className="text-sm font-medium">Lọc</span>
-              </button>
+      <header className="bg-white lg:hidden">
+        <div className="relative">
+          {disabled && <div className="absolute inset-0 z-10 cursor-no-drop" />}
+
+          <div className={disabled ? "opacity-50 select-none" : ""}>
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-end">
+                <button
+                  onClick={() => setShowMobileFilters(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  <Filter className="w-5 h-5" />
+                  <span className="text-sm font-medium">Lọc</span>
+                </button>
+              </div>
             </div>
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
       <div className="flex flex-col lg:flex-row flex-1 lg:overflow-auto">
         {/* Main Content - Scrollable */}
@@ -130,16 +136,15 @@ const Home = () => {
         </div>
 
         {/* Filters Sidebar - Fixed/Non-scrollable */}
-        {activeTab === "home" && (
-          <div className="order-1 lg:order-2 flex-shrink-0 bg-white lg:bg-transparent hidden lg:block">
-            <Filters
-              filters={filters}
-              setFilters={setFilters}
-              onFactoryChange={handleFactoryChange}
-              rooms={rooms}
-            />
-          </div>
-        )}
+        <div className="order-1 lg:order-2 flex-shrink-0 bg-white lg:bg-transparent hidden lg:block">
+          <Filters
+            filters={filters}
+            setFilters={setFilters}
+            onFactoryChange={handleFactoryChange}
+            rooms={rooms}
+            disabled={disabled}
+          />
+        </div>
 
         <AnimatePresence>
           {showMobileFilters && (
