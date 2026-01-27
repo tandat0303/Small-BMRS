@@ -17,19 +17,19 @@ export const roomAPI = {
   },
 
   bookRoom: async (data: {
-    roomId: number,
-    userId: number,
-    fullName: string,
-    startTime: string,
-    endTime: string,
-    meetingName: string,
-    meetingPurpose: string,
-    department: string,
-    hostName: string,
-    substituteCard: string,
-    substituteName: string,
-    bpmNumber: string,
-    daysOfWeek: string[],
+    roomId: number;
+    userId: number;
+    fullName: string;
+    startTime: string;
+    endTime: string;
+    meetingName: string;
+    meetingPurpose: string;
+    department: string;
+    hostName: string;
+    substituteCard: string;
+    substituteName: string;
+    // bpmNumber: string,
+    daysOfWeek: string[];
   }): Promise<any> => {
     try {
       const response = await axiosConfig.post(`/bookmeeting/create`, data);

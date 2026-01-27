@@ -17,18 +17,28 @@ import Swal from "sweetalert2";
 import { login } from "@/services/auth.api";
 import { useNavigate } from "react-router-dom";
 import storage from "@/lib/storage";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 export default function Login() {
+  const { t } = useTranslation();
+
   const formik = useFormik({
     initialValues: {
       cardNumber: "",
       password: "",
-      factory: ""
+      factory: "",
     },
     validationSchema: Yup.object().shape({
-      cardNumber: Yup.string().required("Vui lòng nhập mã thẻ của bạn!"),
-      password: Yup.string().required("Mật khẩu không được để trống!"),
-      factory: Yup.string().required("Vui lòng chọn nhà máy!")
+      cardNumber: Yup.string().required(
+        t("login.validate_empty.please_enter_id"),
+      ),
+      password: Yup.string().required(
+        t("login.validate_empty.please_enter_pass"),
+      ),
+      factory: Yup.string().required(
+        t("login.validate_empty.please_enter_fac"),
+      ),
     }),
     onSubmit: async (values) => {
       setLoading(true);
@@ -49,20 +59,19 @@ export default function Login() {
         navigate("/", { replace: true });
       } catch (error) {
         Swal.fire({
-          title: "Đăng nhập thất bại!",
-          text: "Sai tài khoản/mật khẩu hoặc nhà máy",
+          title: t("login.error.title"),
+          text: t("login.error.text"),
           icon: "error",
-          confirmButtonText: "Đóng",
+          confirmButtonText: t("login.error.confirm_btn_txt"),
           confirmButtonColor: "#ff0000",
         });
       } finally {
         setLoading(false);
       }
-    }
+    },
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
-  const [language, setLanguage] = useState("vi");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -75,23 +84,31 @@ export default function Login() {
           <div className="bg-gradient-to-br from-white to-blue-50 p-8 md:p-12 flex items-center justify-center md:w-2/5">
             <div className="text-center">
               <div className="bg-white rounded-xl shadow-lg p-6 transform transition-transform duration-300 hover:scale-105">
-                <img src={logo} alt="logo" className="w-full h-auto max-w-xs mx-auto" />
+                <img
+                  src={logo}
+                  alt="logo"
+                  className="w-full h-auto max-w-xs mx-auto"
+                />
               </div>
             </div>
           </div>
 
           {/* Form Section */}
           <div className="p-8 md:p-12 md:w-3/5">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Đăng nhập</h2>
-            <p className="text-gray-600 text-sm mb-6 sm:mb-8">Vui lòng nhập thông tin của bạn</p>
-            
-            <form onSubmit={formik.handleSubmit}> 
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+              {t("login.login")}
+            </h2>
+            <p className="text-gray-600 text-sm mb-6 sm:mb-8">
+              {t("login.please_enter_info")}
+            </p>
+
+            <form onSubmit={formik.handleSubmit}>
               <div className="space-y-5 sm:space-y-6">
                 {/* Card Number */}
                 <div>
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
                     <span className="text-red-500 mr-1">*</span>
-                    Số thẻ
+                    {t("login.id")}
                   </label>
                   <input
                     type="text"
@@ -99,7 +116,7 @@ export default function Login() {
                     value={formik.values.cardNumber}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    placeholder="Nhập số thẻ"
+                    placeholder={t("login.enter_id")}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   />
                   {formik.errors.cardNumber && formik.touched.cardNumber && (
@@ -113,7 +130,7 @@ export default function Login() {
                 <div>
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
                     <span className="text-red-500 mr-1">*</span>
-                    Mật khẩu
+                    {t("login.password")}
                   </label>
                   <div className="relative">
                     <input
@@ -122,7 +139,7 @@ export default function Login() {
                       value={formik.values.password}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
-                      placeholder="Nhập mật khẩu"
+                      placeholder={t("login.enter_password")}
                       className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     />
                     <button
@@ -144,7 +161,7 @@ export default function Login() {
                 <div>
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
                     <span className="text-red-500 mr-1">*</span>
-                    Nhà máy
+                    {t("login.factory")}
                   </label>
                   <select
                     value={formik.values.factory}
@@ -153,7 +170,7 @@ export default function Login() {
                     onBlur={formik.handleBlur}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white cursor-pointer"
                   >
-                    <option value="">Chọn nhà máy</option>
+                    <option value="">{t("login.choose_factory")}</option>
                     <option value="LYV">LYV</option>
                     <option value="LHG">LHG</option>
                     <option value="JAZ">JAZ</option>
@@ -182,40 +199,57 @@ export default function Login() {
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
-                      Đang đăng nhập...
+                      {t("login.logging_in")}
                     </span>
                   ) : (
-                    "Đăng nhập"
+                    t("login.login")
                   )}
                 </button>
 
                 {/* Language Selector */}
                 <div>
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
-                    Ngôn ngữ
+                    {t("login.language")}
                   </label>
-                  <Select value={language} onValueChange={setLanguage}>
+                  <Select
+                    value={i18n.language}
+                    onValueChange={(lng) => i18n.changeLanguage(lng)}
+                  >
                     <SelectTrigger className="w-full sm:w-48">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent
-                      position="item-aligned"
+                      position="popper"
                       side="bottom"
+                      align="start"
+                      sideOffset={4}
                       className="mt-1"
                     >
-                      <SelectItem value="vi">
+                      <SelectItem value="vi" disabled={i18n.language === "vi"}>
                         <div className="flex items-center gap-2">
                           <img src={vn} className="w-5 h-5" alt="Vietnamese" />
-                          Tiếng Việt
+                          {t("login.vietnamese")}
                         </div>
                       </SelectItem>
-                      <SelectItem value="en">
+                      <SelectItem value="en" disabled={i18n.language === "en"}>
                         <div className="flex items-center gap-2">
                           <img src={en} className="w-5 h-5" alt="English" />
-                          English
+                          {t("login.english")}
                         </div>
                       </SelectItem>
                     </SelectContent>

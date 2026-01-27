@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect, useRef } from "react";
 import { X, Calendar as CalendarIcon } from "lucide-react";
 import storage from "@/lib/storage";
@@ -11,8 +9,11 @@ import {
 } from "@/lib/helpers";
 import { roomAPI } from "@/services/rooms.api";
 import type { BookingModalProps } from "@/types";
+import { useTranslation } from "react-i18next";
 
 const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
+  const { t } = useTranslation();
+
   const modalRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     startDate: "",
@@ -23,7 +24,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     meetingPurpose: "",
     substituteCard: "",
     substituteName: "",
-    bpmNumber: "",
+    // bpmNumber: "",
     daysOfWeek: [] as string[],
   });
   const [loading, setLoading] = useState(false);
@@ -56,7 +57,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   }, [onClose]);
 
   const user = JSON.parse(storage.get("user") || "{}");
-  const nameVal = `${user.fullName} ${user.level === "0" ? "- VPCT 業務室" : ""}`;
 
   const isInRange = (date: string) =>
     formData.startDate &&
@@ -94,7 +94,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         hostName: "",
         substituteCard: formData.substituteCard,
         substituteName: formData.substituteName,
-        bpmNumber: formData.bpmNumber,
+        // bpmNumber: formData.bpmNumber,
         daysOfWeek: formData.daysOfWeek,
       });
 
@@ -321,7 +321,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         {/* Hours List */}
         <div className="flex flex-col w-16">
           <h3 className="text-xs font-semibold text-gray-600 mb-2 text-center">
-            Hours
+            {t("booking_modal.hour")}
           </h3>
           <div
             ref={hoursScrollRef}
@@ -378,7 +378,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         {/* Minutes List */}
         <div className="flex flex-col w-16">
           <h3 className="text-xs font-semibold text-gray-600 mb-2 text-center">
-            Minutes
+            {t("booking_modal.minutes")}
           </h3>
           <div
             ref={minutesScrollRef}
@@ -459,7 +459,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between rounded-t-lg">
           <h2 className="text-base font-semibold text-gray-900">
-            Đặt lịch{" "}
+            {t("booking_modal.title")}{" "}
             <span className="font-bold">
               {room.Name} | {room.Area}
             </span>
@@ -475,12 +475,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         {/* Success/Error Messages */}
         {success && (
           <div className="mx-5 mt-3 bg-green-50 border border-green-200 rounded p-3 text-green-700 text-sm">
-            ✓ Đặt phòng thành công!
+            {t("booking_modal.success")}
           </div>
         )}
         {error && (
           <div className="mx-5 mt-3 bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">
-            ✕ {error}
+            {t("booking_modal.error")}
           </div>
         )}
 
@@ -495,7 +495,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           />
           <input
             type="text"
-            value={nameVal}
+            value={user.fullName}
             disabled
             className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-600 text-sm"
           />
@@ -506,7 +506,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
             name="meetingName"
             value={formData.meetingName}
             onChange={handleChange}
-            placeholder="Chủ đề cuộc họp"
+            placeholder={t("booking_modal.meeting_name_placeholder")}
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
           <input
@@ -514,7 +514,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
             name="meetingPurpose"
             value={formData.meetingPurpose}
             onChange={handleChange}
-            placeholder="Mục đích cuộc họp"
+            placeholder={t("booking_modal.meeting_purpose_placeholder")}
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
           <input
@@ -522,7 +522,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
             name="substituteCard"
             value={formData.substituteCard}
             onChange={handleChange}
-            placeholder="Số thẻ người thay thế"
+            placeholder={t("booking_modal.substitute_card_placeholder")}
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
           <input
@@ -530,17 +530,17 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
             name="substituteName"
             value={formData.substituteName}
             onChange={handleChange}
-            placeholder="Tên người thay thế"
+            placeholder={t("booking_modal.substitute_name_placeholder")}
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
-          <input
+          {/* <input
             type="text"
             name="bpmNumber"
             value={formData.bpmNumber}
             onChange={handleChange}
             placeholder="Số phiếu BPM"
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
-          />
+          /> */}
 
           {/* DateTime */}
           <div className="relative">
@@ -552,7 +552,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
               <CalendarIcon className="w-4 h-4 mr-3 text-gray-500 shrink-0" />
 
               {!formData.startDate ? (
-                <span className="text-gray-400 text-sm">Chọn ngày & giờ</span>
+                <span className="text-gray-400 text-sm">
+                  {t("booking_modal.select_date_time")}
+                </span>
               ) : (
                 <div className="flex items-center w-full text-sm font-medium text-gray-700">
                   {/* START */}
@@ -599,13 +601,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
               >
                 {/* Tab Selection */}
                 <div className="flex gap-2 mb-4">
-                  {["start", "end"].map((t) => {
-                    const isEnd = t === "end";
+                  {["start", "end"].map((time) => {
+                    const isEnd = time === "end";
                     const disableEnd = isEnd && !formData.startDate;
 
                     return (
                       <button
-                        key={t}
+                        key={time}
                         type="button"
                         disabled={disableEnd}
                         onClick={() =>
@@ -613,14 +615,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                         }
                         className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors
                           ${
-                            selectingDate === t
+                            selectingDate === time
                               ? "bg-blue-500 text-white"
                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }
                           ${disableEnd ? "opacity-40 cursor-not-allowed" : ""}
                         `}
                       >
-                        {t === "start" ? "Bắt đầu" : "Kết thúc"}
+                        {time === "start"
+                          ? t("booking_modal.start")
+                          : t("booking_modal.end")}
                       </button>
                     );
                   })}
@@ -651,7 +655,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                     onClick={handleClearDateTime}
                     className="px-4 py-2 text-sm rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                   >
-                    Clear
+                    {t("booking_modal.clear")}
                   </button>
 
                   <div className="flex gap-2">
@@ -660,7 +664,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                       onClick={() => setShowCalendar(false)}
                       className="px-5 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-sm"
                     >
-                      Cancel
+                      {t("booking_modal.cancel")}
                     </button>
                     <button
                       type="button"
@@ -674,7 +678,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                         }
                       `}
                     >
-                      OK
+                      {t("booking_modal.ok")}
                     </button>
                   </div>
                 </div>
@@ -684,7 +688,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Chỉ áp dụng các thứ được chọn
+              {t("booking_modal.select_days")}
             </label>
             <div className="relative">
               <button
@@ -695,7 +699,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
               >
                 {formData.daysOfWeek.length === 0 && (
                   <span className="text-gray-400 px-1 whitespace-nowrap">
-                    Chọn thứ áp dụng
+                    {t("booking_modal.select_days_placeholder")}
                   </span>
                 )}
 
@@ -722,7 +726,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
               {showDaysDropdown && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
                   <div className="bg-white rounded-xl p-4 w-[320px] space-y-2 animate-in zoom-in-95">
-                    <h3 className="text-sm font-semibold">Chọn thứ áp dụng</h3>
+                    <h3 className="text-sm font-semibold">
+                      {t("booking_modal.select_days_placeholder")}
+                    </h3>
 
                     {Object.entries(dayNames).map(([value, label]) => {
                       const active = formData.daysOfWeek.includes(value);
@@ -749,7 +755,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                         onClick={() => setShowDaysDropdown(false)}
                         className="px-4 py-1 bg-blue-500 text-white rounded"
                       >
-                        OK
+                        {t("booking_modal.ok")}
                       </button>
                     </div>
                   </div>
@@ -765,7 +771,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
               disabled={loading}
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded font-medium transition-colors disabled:bg-blue-300 text-sm"
             >
-              {loading ? "Đang xử lý..." : "Nhấn để đặt phòng"}
+              {loading
+                ? t("booking_modal.submitting")
+                : t("booking_modal.submit")}
             </button>
           </div>
         </form>

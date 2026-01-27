@@ -3,6 +3,7 @@ import { Users } from "lucide-react";
 import type { RoomListProps } from "../types";
 import RoomCard from "../components/RoomCard";
 import { isOverlapping } from "@/lib/helpers";
+import { useTranslation } from "react-i18next";
 
 const RoomList: React.FC<RoomListProps> = ({
   filters,
@@ -11,6 +12,8 @@ const RoomList: React.FC<RoomListProps> = ({
   loading,
   error,
 }) => {
+  const { t } = useTranslation();
+
   const [roomsWithBookings, setRoomsWithBookings] = useState<any[]>([]);
 
   useEffect(() => {
@@ -182,7 +185,7 @@ const RoomList: React.FC<RoomListProps> = ({
       <div className="text-center py-16 sm:py-20">
         <Users className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-500 text-sm sm:text-base">
-          Không tìm thấy phòng họp phù hợp
+          {t("rooms_list.no_note_found")}
         </p>
       </div>
     );

@@ -13,9 +13,12 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import storage from "@/lib/storage";
 import { AnimatePresence, motion } from "framer-motion";
+import i18n from "@/i18n";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
-  const [language, setLanguage] = useState("vi");
+  const { t } = useTranslation();
+
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -42,8 +45,8 @@ const Header = () => {
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-4">
         <div className="flex items-center flex-shrink-0">
-          <div 
-            className="w-16 sm:w-20 h-10 sm:h-12 bg-white flex items-center justify-center cursor-pointer" 
+          <div
+            className="w-16 sm:w-20 h-10 sm:h-12 bg-white flex items-center justify-center cursor-pointer"
             onClick={() => navigate("/")}
           >
             <img
@@ -55,35 +58,44 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          <Select value={language} onValueChange={setLanguage}>
+          <Select
+            value={i18n.language}
+            onValueChange={(lng) => i18n.changeLanguage(lng)}
+          >
             <SelectTrigger className="w-32 sm:w-48 text-xs sm:text-sm">
               <SelectValue />
             </SelectTrigger>
 
             <SelectContent
-              position="item-aligned"
+              position="popper"
               side="bottom"
+              align="start"
+              sideOffset={4}
               className="mt-1"
             >
-              <SelectItem value="vi">
+              <SelectItem value="vi" disabled={i18n.language === "vi"}>
                 <div className="flex items-center gap-2">
                   <img
                     src={vn || "/placeholder.svg"}
                     className="w-4 h-4 sm:w-5 sm:h-5"
                     alt="Vietnamese"
                   />
-                  <span className="text-xs sm:text-sm">Tiếng Việt</span>
+                  <span className="text-xs sm:text-sm">
+                    {t("header.vietnamese")}
+                  </span>
                 </div>
               </SelectItem>
 
-              <SelectItem value="en">
+              <SelectItem value="en" disabled={i18n.language === "en"}>
                 <div className="flex items-center gap-2">
                   <img
                     src={en || "/placeholder.svg"}
                     className="w-4 h-4 sm:w-5 sm:h-5"
                     alt="English"
                   />
-                  <span className="text-xs sm:text-sm">English</span>
+                  <span className="text-xs sm:text-sm">
+                    {t("header.english")}
+                  </span>
                 </div>
               </SelectItem>
             </SelectContent>
@@ -144,7 +156,7 @@ const Header = () => {
                         className="w-full flex items-center gap-2 px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition"
                       >
                         <LogOut className="w-4 h-4" />
-                        Đăng xuất
+                        {t("header.logout")}
                       </button>
                     </div>
                   </motion.div>

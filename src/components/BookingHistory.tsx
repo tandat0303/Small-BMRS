@@ -13,8 +13,11 @@ import { scheduleAPI } from "../services/schedules.api";
 import storage from "@/lib/storage";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatDateTime, isUpcoming } from "@/lib/helpers";
+import { useTranslation } from "react-i18next";
 
 const BookingHistory: React.FC = () => {
+  const { t } = useTranslation();
+
   const [meetings, setMeetings] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +42,7 @@ const BookingHistory: React.FC = () => {
       const data = await scheduleAPI.getMySchedule(user.factory, userId);
       setMeetings(data);
     } catch (err) {
-      setError("Đã xảy ra lỗi khi tải lịch sử");
+      setError(t("booking_history.error.load_failed"));
       console.error("Error fetching schedule:", err);
     } finally {
       setLoading(false);
@@ -47,7 +50,7 @@ const BookingHistory: React.FC = () => {
   };
 
   const handleCancel = async (scheduleId: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn hủy đặt phòng này?")) {
+    if (!window.confirm(t("booking_history.cancel_confirm"))) {
       return;
     }
 
@@ -56,7 +59,7 @@ const BookingHistory: React.FC = () => {
       // Refresh the list
       fetchSchedule();
     } catch (err) {
-      alert("Không thể hủy đặt phòng. Vui lòng thử lại.");
+      alert(t("booking_history.cancel_error"));
       console.error("Error canceling schedule:", err);
     }
   };
@@ -101,8 +104,12 @@ const BookingHistory: React.FC = () => {
             }`}
           >
             <List className="w-4 h-4" />
-            <span className="hidden sm:inline">Cuộc họp sắp diễn ra</span>
-            <span className="sm:hidden">Sắp diễn ra</span>
+            <span className="hidden sm:inline">
+              {t("booking_history.tabs.upcoming")}
+            </span>
+            <span className="sm:hidden">
+              {t("booking_history.tabs.upcoming_short")}
+            </span>
           </button>
           <button
             onClick={() => setActiveFilter("completed")}
@@ -113,8 +120,12 @@ const BookingHistory: React.FC = () => {
             }`}
           >
             <List className="w-4 h-4" />
-            <span className="hidden sm:inline">Cuộc họp đã kết thúc</span>
-            <span className="sm:hidden">Đã kết thúc</span>
+            <span className="hidden sm:inline">
+              {t("booking_history.tabs.completed")}
+            </span>
+            <span className="sm:hidden">
+              {t("booking_history.tabs.completed_short")}
+            </span>
           </button>
           <button
             onClick={() => setActiveFilter("cancelled")}
@@ -125,8 +136,12 @@ const BookingHistory: React.FC = () => {
             }`}
           >
             <List className="w-4 h-4" />
-            <span className="hidden sm:inline">Cuộc họp đã hủy</span>
-            <span className="sm:hidden">Đã hủy</span>
+            <span className="hidden sm:inline">
+              {t("booking_history.tabs.cancelled")}
+            </span>
+            <span className="sm:hidden">
+              {t("booking_history.tabs.cancelled_short")}
+            </span>
           </button>
         </div>
       </div>
@@ -136,7 +151,7 @@ const BookingHistory: React.FC = () => {
         <div className="text-center py-16 sm:py-20">
           <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500 text-sm sm:text-base">
-            Không có lịch họp nào
+            {t("booking_history.no_meetings")}
           </p>
         </div>
       ) : (
@@ -171,7 +186,7 @@ const BookingHistory: React.FC = () => {
                       <div className="absolute inset-0 rounded-lg bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                         <Eye className="w-4 h-4 mr-1 text-white" />
                         <span className="text-white text-xs font-medium">
-                          Preview
+                          {t("booking_history.preview")}
                         </span>
                       </div>
                     </div>
@@ -221,11 +236,15 @@ const BookingHistory: React.FC = () => {
                     {/* Meeting Details */}
                     <div className="text-xs sm:text-sm text-gray-600 space-y-1">
                       <div>
-                        <span className="font-medium">Phòng ban:</span>{" "}
+                        <span className="font-medium">
+                          {t("booking_history.department")}:
+                        </span>{" "}
                         <span className="truncate">{meeting.DP_User}</span>
                       </div>
                       <div>
-                        <span className="font-medium">Người chủ trì:</span>{" "}
+                        <span className="font-medium">
+                          {t("booking_history.host")}:
+                        </span>{" "}
                         <span className="truncate">
                           {meeting.Name_User} - {meeting.ID_User}
                         </span>
@@ -237,7 +256,7 @@ const BookingHistory: React.FC = () => {
                       <button
                         onClick={() => handleCancel(meeting.ID_Schedule)}
                         className="sm:absolute sm:top-3 sm:right-3 p-2 h-fit text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0 mt-3 sm:mt-0"
-                        title="Hủy đặt phòng"
+                        title={t("booking_history.cancel_booking")}
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -246,15 +265,15 @@ const BookingHistory: React.FC = () => {
                   <div className="absolute bottom-3 right-3">
                     {meeting.Cancel ? (
                       <span className="inline-block px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
-                        Đã hủy
+                        {t("booking_history.status.cancelled")}
                       </span>
                     ) : upcoming ? (
                       <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                        Sắp diễn ra
+                        {t("booking_history.status.upcoming")}
                       </span>
                     ) : (
                       <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
-                        Đã kết thúc
+                        {t("booking_history.status.completed")}
                       </span>
                     )}
                   </div>

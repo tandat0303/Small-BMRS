@@ -1,0 +1,155 @@
+{
+    "login": {
+        "login": "Login",
+        "logging_in": "Logging in...",
+        "please_enter_info": "Please enter your information",
+        "id": "ID",
+        "enter_id": "Enter ID",
+        "password": "Password",
+        "enter_password": "Enter password",
+        "factory": "Factory",
+        "choose_factory": "Choose factory",
+        "language": "Language",
+        "vietnamese": "Vietnamese",
+        "english": "English",
+        "validate_empty": {
+            "please_enter_id": "Please enter your card number!",
+            "please_enter_pass": "The password cannot be left blank!",
+            "please_choose_fac": "Please select a factory!"
+        },
+        "error": {
+            "title": "Login failed",
+            "text": "Incorrect id/password or factory",
+            "confirm_btn_txt": "Close"
+        }
+    },
+    "not_found": {
+        "page_not_exist": "The page does not exist",
+        "sorry_message_1": "Sorry, we couldn't find the page you were looking for.",
+        "sorry_message_2": "The page may have been deleted, moved, or may no longer exist.",
+        "go_back": "Go back",
+        "back_to_homepage": "Back to Home Page"
+    },
+    "header": {
+        "vietnamese": "Vietnamese",
+        "english": "English",
+        "logout": "Logout"
+    },
+    "filters": {
+        "title": "Meeting Room Filters",
+        "clear_all": "Clear all filters",
+        "time": "Time",
+        "all_day": "All day",
+        "time_range": "Time range",
+        "select_time_range": "Select time range",
+        "choose_range": "Choose time range",
+        "area": "Area",
+        "area_count": "areas",
+        "select_factory_first": "Select factory to view areas",
+        "capacity": "Capacity",
+        "room_status": "Meeting Room Status",
+        "available": "Available",
+        "occupied": "Occupied",
+        "factory": "Factory",
+        "cancel": "Cancel",
+        "clear": "Clear",
+        "ok": "OK",
+        "apply": "Apply"
+    },
+    "home": {
+        "filter": "Filters",
+        "homepage": "Home Page",
+        "booking_history": "Booking History",
+        "error": {
+            "fetch_rooms": "Meeting room data could not be loaded. Please try again."
+        }
+    },
+    "rooms_list": {
+        "no_note_found": "No suitable meeting rooms found"
+    },
+    "room_card": {
+    "preview": "Preview",
+    "capacity": "Capacity",
+    "people": "people",
+    "area": "Area",
+    "view_details": "View Details",
+    "book_now": "Book Now",
+    "today_bookings": "Today's Bookings",
+    "no_bookings_today": "No meetings scheduled for today",
+    "see_more": "See More",
+    "note": "Note",
+    "error": {
+      "title": "Error",
+      "fetch_failed": "Failed to fetch booking list!",
+      "confirm_btn": "Close"
+    },
+    "modal": {
+      "room_details": "Meeting Room Details",
+      "click_to_book": "Click to book",
+      "booking_details": "Booking Details",
+      "no_meetings_today": "No meetings scheduled for today",
+      "close": "Close"
+    }
+  },
+  "booking_modal": {
+    "hour": "Hour",
+    "minutes": "Minutes",
+    "title": "Book Room",
+    "room_name": "Room Name",
+    "meeting_info": "Meeting Information",
+    "meeting_name": "Meeting Name",
+    "meeting_name_placeholder": "Enter meeting name",
+    "meeting_purpose": "Meeting Purpose",
+    "meeting_purpose_placeholder": "Enter meeting purpose",
+    "host_info": "Host Information",
+    "host_name": "Host Name",
+    "substitute_card": "Substitute Card Number",
+    "substitute_card_placeholder": "Enter substitute card number",
+    "substitute_name": "Substitute Name",
+    "substitute_name_placeholder": "Enter substitute name",
+    "bpm_number": "BPM Number",
+    "bpm_number_placeholder": "Enter BPM number",
+    "date_time": "Date & Time",
+    "select_date_time": "Select date & time",
+    "select_days": "Select applicable days",
+    "select_days_placeholder": "Select applicable days",
+    "start": "Start",
+    "end": "End",
+    "clear": "Clear",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "submit": "Click to book",
+    "submitting": "Processing...",
+    "success": "Booking successful!",
+    "error": "Booking failed",
+    "prev_month": "Previous month",
+    "next_month": "Next month"
+  },
+  "booking_history": {
+    "title": "Booking History",
+    "tabs": {
+      "upcoming": "Upcoming Meetings",
+      "upcoming_short": "Upcoming",
+      "completed": "Completed Meetings",
+      "completed_short": "Completed",
+      "cancelled": "Cancelled Meetings",
+      "cancelled_short": "Cancelled"
+    },
+    "no_meetings": "No meetings scheduled",
+    "preview": "Preview",
+    "department": "Department",
+    "host": "Host",
+    "cancel_booking": "Cancel booking",
+    "cancel_confirm": "Are you sure you want to cancel this booking?",
+    "cancel_error": "Cannot cancel booking. Please try again.",
+    "status": {
+      "cancelled": "Cancelled",
+      "upcoming": "Upcoming",
+      "completed": "Completed"
+    },
+    "error": {
+      "load_failed": "An error occurred while loading history"
+    },
+    "loading": "Loading..."
+  }
+}

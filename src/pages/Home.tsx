@@ -8,8 +8,11 @@ import { Filter } from "lucide-react";
 import MobileFilterModal from "@/components/MobileFilterModal";
 import { AnimatePresence, motion } from "framer-motion";
 import { factoryFilterAPI } from "@/services/factory.api";
+import { useTranslation } from "react-i18next";
 
 const Home = () => {
+  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<"home" | "history">("home");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -50,7 +53,7 @@ const Home = () => {
       setRooms(fetchedRooms);
       setSchedules(fetchedSchedules);
     } catch (err) {
-      setError("Không thể tải dữ liệu phòng họp. Vui lòng thử lại.");
+      setError(t("home.error.fetch_rooms"));
 
       setRooms([]);
       setSchedules([]);
@@ -76,7 +79,9 @@ const Home = () => {
                   className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   <Filter className="w-5 h-5" />
-                  <span className="text-sm font-medium">Lọc</span>
+                  <span className="text-sm font-medium">
+                    {t("home.filter")}
+                  </span>
                 </button>
               </div>
             </div>
@@ -99,7 +104,7 @@ const Home = () => {
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
-                  Trang chủ
+                  {t("home.homepage")}
                 </button>
                 <button
                   onClick={() => setActiveTab("history")}
@@ -109,7 +114,7 @@ const Home = () => {
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
-                  Lịch sử đặt phòng
+                  {t("home.booking_history")}
                 </button>
               </div>
             </div>

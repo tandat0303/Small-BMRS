@@ -4,6 +4,7 @@ import type { MobileFilterProps } from "../types";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatRangeLabel } from "@/lib/helpers";
 import storage from "@/lib/storage";
+import { useTranslation } from "react-i18next";
 
 const MobileFilterModal: React.FC<MobileFilterProps> = ({
   filters,
@@ -12,6 +13,8 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
   onFactoryChange,
   rooms = [],
 }) => {
+  const { t } = useTranslation();
+
   const [showDateModal, setShowDateModal] = useState(false);
   const [userDefaultFactory, setUserDefaultFactory] = useState<string>("");
 
@@ -113,7 +116,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-gray-700" />
             <h2 className="text-lg font-semibold text-gray-900">
-              Bộ lọc phòng họp
+              {t("filters.title")}
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -121,7 +124,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
               <button
                 onClick={clearFilters}
                 className="text-sm text-blue-500 hover:text-blue-300 font-medium transition-colors"
-                title="Xóa tất cả bộ lọc"
+                title={t("filters.clear_all")}
               >
                 <RefreshCcw className="w-5 h-5" />
               </button>
@@ -139,7 +142,9 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
       <div className="p-4 space-y-5">
         {/* Time Filter */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Thời gian</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">
+            {t("filters.time")}
+          </h3>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() =>
@@ -161,7 +166,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   : "border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Cả ngày
+              {t("filters.all_day")}
             </button>
 
             <button
@@ -180,7 +185,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   : "border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Khoảng thời gian
+              {t("filters.time_range")}
             </button>
           </div>
 
@@ -196,7 +201,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   filters.timeFilter.endDateTime!,
                 )
               ) : (
-                <span className="ml-1">Chọn ngày & giờ</span>
+                <span className="ml-1">{t("filters.select_time_range")}</span>
               )}
             </div>
           )}
@@ -205,14 +210,14 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
         {/* Area Filter - Dynamic */}
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">
-            Khu vực{" "}
+            {t("filters.area")}{" "}
             {areas.length > 0 && (
               <span className="text-gray-500">({areas.length})</span>
             )}
           </h3>
           {areas.length === 0 ? (
             <div className="text-sm text-gray-400 italic py-2">
-              Chọn nhà máy để xem khu vực
+              {t("filters.select_factory_first")}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -235,7 +240,9 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
 
         {/* Capacity Filter */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Sức chứa</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">
+            {t("filters.capacity")}
+          </h3>
           <div className="grid grid-cols-2 gap-2">
             {capacities.map((capacity) => (
               <button
@@ -256,7 +263,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
         {/* Room Status Filter */}
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">
-            Trạng thái phòng họp
+            {t("filters.room_status")}
           </h3>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -272,7 +279,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   : "border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Trống
+              {t("filters.available")}
             </button>
             <button
               onClick={() =>
@@ -287,14 +294,16 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   : "border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Có lịch
+              {t("filters.occupied")}
             </button>
           </div>
         </div>
 
         {/* Factory Filter */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Nhà máy</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">
+            {t("filters.factory")}
+          </h3>
           <div className="grid grid-cols-3 gap-2">
             {factories.map((factory) => (
               <button
@@ -318,7 +327,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
             onClick={onClose}
             className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
           >
-            Áp dụng
+            {t("filters.apply")}
           </button>
         </div>
       </div>
@@ -338,7 +347,9 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
               className="bg-white rounded-lg w-full max-w-md p-5"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="font-semibold mb-4">Chọn khoảng thời gian</h2>
+              <h2 className="font-semibold mb-4">
+                {t("filters.choose_range")}
+              </h2>
 
               <input
                 type="date"
@@ -379,7 +390,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   onClick={() => setShowDateModal(false)}
                   className="bg-gray-400 text-white px-4 py-1 rounded hover:bg-gray-300"
                 >
-                  Hủy
+                  {t("filters.cancel")}
                 </button>
 
                 <button
@@ -400,7 +411,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   }}
                   className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-400"
                 >
-                  Clear
+                  {t("filters.clear")}
                 </button>
 
                 <button
@@ -426,7 +437,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   }}
                   className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-40"
                 >
-                  OK
+                  {t("filters.ok")}
                 </button>
               </div>
             </div>
