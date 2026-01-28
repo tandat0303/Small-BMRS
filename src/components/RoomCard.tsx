@@ -8,8 +8,8 @@ import {
   Clock,
   Calendar,
   Warehouse,
-  X,
 } from "lucide-react";
+import { Image } from "antd";
 import type { Room } from "@/types";
 import BookingModal from "../components/BookingModal";
 import { scheduleAPI } from "@/services/schedules.api.ts";
@@ -27,7 +27,8 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showNotePopover, setShowNotePopover] = useState(false);
-  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewReady, setPreviewReady] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
@@ -98,7 +99,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
     fetchTodaySchedule();
     const interval = setInterval(fetchTodaySchedule, 300000);
     return () => clearInterval(interval);
-  }, [room.ID_Room, t]);
+  }, [room.ID_Room]);
 
   useEffect(() => {
     const fetchModalSchedule = async () => {
@@ -173,27 +174,18 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
         {/* Room Image */}
         <div className="p-3">
           <div className="relative h-40 bg-gray-100 rounded-sm overflow-hidden">
-            <div
-              className="relative h-40 bg-gray-100 rounded-lg overflow-hidden group group-hover:scale-105 transition-transform cursor-pointer"
-              onClick={() => setShowImagePreview(true)}
-            >
-              <img
-                src={imageUrl || "/placeholder.svg"}
-                alt={room.Name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    "/api/placeholder/400/300";
-                }}
-              />
-
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <Eye className="w-4 h-4 mr-1 text-white" />
-                <span className="text-white text-xs font-medium tracking-wide">
-                  {t("room_card.preview")}
-                </span>
-              </div>
-            </div>
+            <Image
+              src={imageUrl}
+              alt={room.Name}
+              width="100%"
+              height="100%"
+              style={{
+                borderRadius: 6,
+                objectFit: "cover",
+                display: "block",
+              }}
+              fallback="/api/placeholder/400/300"
+            />
 
             <div className="absolute bottom-2 right-2 flex items-center rounded-full px-2.5 py-1 text-xs bg-white/50 backdrop-opacity-75 border border-white/40 shadow-sm">
               <Users className="w-3.5 h-3.5 text-gray-700" />
@@ -215,9 +207,35 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
         {/* Room Details */}
         <div className="px-3 pb-3 flex flex-col flex-grow">
           <div className="mb-3">
-            <h3 className="text-base font-bold text-gray-900 mb-1 line-clamp-1">
-              {room.Name}
-            </h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-bold text-gray-900 line-clamp-1 flex-1">
+                {room.Name}
+              </h3>
+
+              {room.note && (
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setShowNotePopover(!showNotePopover)}
+                    className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 transition cursor-pointer"
+                  >
+                    <AlertTriangle className="w-3 h-3" />
+                    <span className="font-medium">{t("room_card.note")}</span>
+                  </button>
+
+                  {showNotePopover && (
+                    <div
+                      ref={popoverRef}
+                      className="absolute z-[9999] left-full ml-1 top-1/2 -translate-y-1/2 bg-orange-50 border-2 border-orange-200 rounded-lg p-3 shadow-xl w-64"
+                      style={{ boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)" }}
+                    >
+                      <p className="text-xs text-gray-700 whitespace-pre-wrap">
+                        {room.note}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="flex flex-wrap gap-2 text-xs text-gray-600">
               {/* <div className="flex items-center gap-1">
@@ -237,29 +255,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
             </div>
           </div>
 
-          {room.note && (
-            <div className="mb-2 relative">
-              <button
-                onClick={() => setShowNotePopover(!showNotePopover)}
-                className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 transition cursor-pointer"
-              >
-                <AlertTriangle className="w-3 h-3" />
-                <span className="font-medium">{t("room_card.note")}</span>
-              </button>
-
-              {showNotePopover && (
-                <div
-                  ref={popoverRef}
-                  className="absolute z-50 mt-1 bg-orange-50 border-2 border-orange-200 rounded-lg p-3 shadow-lg max-w-xs"
-                >
-                  <p className="text-xs text-gray-700 whitespace-pre-wrap">
-                    {room.note}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Today's Bookings */}
           <div className="mb-3 flex-grow">
             <h4 className="text-xs font-semibold text-gray-700 mb-2 flex">
@@ -267,7 +262,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
               {todayBookings.length > 2 && (
                 <div className="text-blue-600 font-bold">
                   (+
-                  {todayBookings.length})
+                  {todayBookings.length - 2})
                 </div>
               )}
             </h4>
@@ -297,14 +292,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
                   </div>
                 ))}
 
-                {todayBookings.length > 2 && (
+                {/* {todayBookings.length > 2 && (
                   <button
                     onClick={() => setShowDetailsModal(true)}
                     className="text-xs text-blue-500 hover:text-blue-700 font-medium w-full text-center py-1"
                   >
                     + {todayBookings.length - 2} {t("room_card.see_more")}
                   </button>
-                )}
+                )} */}
               </div>
             )}
           </div>
@@ -326,39 +321,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
           </div>
         </div>
       </div>
-
-      {/* Image Preview Modal */}
-      <AnimatePresence>
-        {showImagePreview && (
-          <motion.div
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowImagePreview(false)}
-          >
-            <motion.div
-              className="relative max-w-4xl max-h-[90vh]"
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setShowImagePreview(false)}
-                className="absolute -top-10 right-0 text-white hover:text-gray-300"
-              >
-                <X className="w-8 h-8" />
-              </button>
-              <img
-                src={imageUrl}
-                alt={room.Name}
-                className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Booking Modal */}
       <AnimatePresence>

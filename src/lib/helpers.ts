@@ -74,15 +74,6 @@ export const formatLocalDate = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
-export const dayNames: { [key: string]: string } = {
-  monday: "thứ hai",
-  tuesday: "thứ ba",
-  wednesday: "thứ tư",
-  thursday: "thứ năm",
-  friday: "thứ sáu",
-  saturday: "thứ bảy",
-};
-
 export const isOverlapping = (
   aStart: Date,
   aEnd: Date,

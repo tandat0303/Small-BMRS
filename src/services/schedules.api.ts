@@ -2,8 +2,6 @@ import { setTimeToday } from "@/lib/helpers";
 import axiosConfig from "./axios";
 import type { Schedule } from "@/types";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 export const scheduleAPI = {
   getAllSchedulesOfRoom: async (
     roomId: number,
@@ -11,12 +9,9 @@ export const scheduleAPI = {
   ): Promise<Schedule[]> => {
     try {
       const selectedDate = date || new Date().toISOString();
-      const res = await axiosConfig.post(
-        `${API_URL}/bookmeeting/${roomId}/getschedule`,
-        {
-          date: selectedDate,
-        },
-      );
+      const res = await axiosConfig.post(`/bookmeeting/${roomId}/getschedule`, {
+        date: selectedDate,
+      });
       return res.data;
     } catch (error) {
       console.log("Lỗi khi lấy danh sách lịch trình", error);
@@ -30,7 +25,7 @@ export const scheduleAPI = {
 
     try {
       const res = await axiosConfig.post(
-        `${API_URL}/bookmeeting/${factory}/getschedulesearch`,
+        `/bookmeeting/${factory}/getschedulesearch`,
         {
           datestart: startTimeISO,
           dateend: endTimeISO,
@@ -50,7 +45,7 @@ export const scheduleAPI = {
   ): Promise<Schedule[]> => {
     try {
       const response = await axiosConfig.get(
-        `${API_URL}/bookmeeting/${factory}/${userId}/getmyschedule`,
+        `/bookmeeting/${factory}/${userId}/getmyschedule`,
       );
       return response.data;
     } catch (error) {

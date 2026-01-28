@@ -1,73 +1,75 @@
 {
-    "login": {
-        "login": "Login",
-        "logging_in": "Logging in...",
-        "please_enter_info": "Please enter your information",
-        "id": "ID",
-        "enter_id": "Enter ID",
-        "password": "Password",
-        "enter_password": "Enter password",
-        "factory": "Factory",
-        "choose_factory": "Choose factory",
-        "language": "Language",
-        "vietnamese": "Vietnamese",
-        "english": "English",
-        "validate_empty": {
-            "please_enter_id": "Please enter your card number!",
-            "please_enter_pass": "The password cannot be left blank!",
-            "please_choose_fac": "Please select a factory!"
-        },
-        "error": {
-            "title": "Login failed",
-            "text": "Incorrect id/password or factory",
-            "confirm_btn_txt": "Close"
-        }
+  "login": {
+    "login": "Login",
+    "logging_in": "Logging in...",
+    "please_enter_info": "Please enter your information",
+    "id": "ID",
+    "enter_id": "Enter ID",
+    "password": "Password",
+    "enter_password": "Enter password",
+    "factory": "Factory",
+    "choose_factory": "Choose factory",
+    "language": "Language",
+    "vietnamese": "Vietnamese",
+    "english": "English",
+    "taiwan": "Taiwan",
+    "validate_empty": {
+      "please_enter_id": "Please enter your card number!",
+      "please_enter_pass": "The password cannot be left blank!",
+      "please_choose_fac": "Please select a factory!"
     },
-    "not_found": {
-        "page_not_exist": "The page does not exist",
-        "sorry_message_1": "Sorry, we couldn't find the page you were looking for.",
-        "sorry_message_2": "The page may have been deleted, moved, or may no longer exist.",
-        "go_back": "Go back",
-        "back_to_homepage": "Back to Home Page"
-    },
-    "header": {
-        "vietnamese": "Vietnamese",
-        "english": "English",
-        "logout": "Logout"
-    },
-    "filters": {
-        "title": "Meeting Room Filters",
-        "clear_all": "Clear all filters",
-        "time": "Time",
-        "all_day": "All day",
-        "time_range": "Time range",
-        "select_time_range": "Select time range",
-        "choose_range": "Choose time range",
-        "area": "Area",
-        "area_count": "areas",
-        "select_factory_first": "Select factory to view areas",
-        "capacity": "Capacity",
-        "room_status": "Meeting Room Status",
-        "available": "Available",
-        "occupied": "Occupied",
-        "factory": "Factory",
-        "cancel": "Cancel",
-        "clear": "Clear",
-        "ok": "OK",
-        "apply": "Apply"
-    },
-    "home": {
-        "filter": "Filters",
-        "homepage": "Home Page",
-        "booking_history": "Booking History",
-        "error": {
-            "fetch_rooms": "Meeting room data could not be loaded. Please try again."
-        }
-    },
-    "rooms_list": {
-        "no_note_found": "No suitable meeting rooms found"
-    },
-    "room_card": {
+    "error": {
+      "title": "Login failed",
+      "text": "Incorrect id/password or factory",
+      "confirm_btn_txt": "Close"
+    }
+  },
+  "not_found": {
+    "page_not_exist": "The page does not exist",
+    "sorry_message_1": "Sorry, we couldn't find the page you were looking for.",
+    "sorry_message_2": "The page may have been deleted, moved, or may no longer exist.",
+    "go_back": "Go back",
+    "back_to_homepage": "Back to Home Page"
+  },
+  "header": {
+    "vietnamese": "Vietnamese",
+    "english": "English",
+    "taiwan": "Taiwan",
+    "logout": "Logout"
+  },
+  "filters": {
+    "title": "Meeting Room Filters",
+    "clear_all": "Clear all filters",
+    "time": "Time",
+    "all_day": "All day",
+    "time_range": "Time range",
+    "select_time_range": "Select time range",
+    "choose_range": "Choose time range",
+    "area": "Area",
+    "area_count": "areas",
+    "select_factory_first": "Select factory to view areas",
+    "capacity": "Capacity",
+    "room_status": "Meeting Room Status",
+    "available": "Available",
+    "occupied": "Occupied",
+    "factory": "Factory",
+    "cancel": "Cancel",
+    "clear": "Clear",
+    "ok": "OK",
+    "apply": "Apply"
+  },
+  "home": {
+    "filter": "Filters",
+    "homepage": "Home Page",
+    "booking_history": "Booking History",
+    "error": {
+      "fetch_rooms": "Meeting room data could not be loaded. Please try again."
+    }
+  },
+  "rooms_list": {
+    "no_note_found": "No suitable meeting rooms found"
+  },
+  "room_card": {
     "preview": "Preview",
     "capacity": "Capacity",
     "people": "people",
@@ -81,6 +83,7 @@
     "error": {
       "title": "Error",
       "fetch_failed": "Failed to fetch booking list!",
+      "get_info_failed": "Unable to load user's department!",
       "confirm_btn": "Close"
     },
     "modal": {
@@ -110,7 +113,7 @@
     "bpm_number": "BPM Number",
     "bpm_number_placeholder": "Enter BPM number",
     "date_time": "Date & Time",
-    "select_date_time": "Select date & time",
+    "select_datetime": "Select date & time",
     "select_days": "Select applicable days",
     "select_days_placeholder": "Select applicable days",
     "start": "Start",
@@ -123,7 +126,13 @@
     "success": "Booking successful!",
     "error": "Booking failed",
     "prev_month": "Previous month",
-    "next_month": "Next month"
+    "next_month": "Next month",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
   },
   "booking_history": {
     "title": "Booking History",

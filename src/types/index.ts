@@ -16,7 +16,7 @@ export interface Room {
   Factory: string;
   ID_Area: number;
   note: string;
-  Bpm_req: string | null;
+  Bpm_req: number | null;
   bpm_area_exc: string | null;
   isHideArea: number | null;
   isHideRoom: number | null;
@@ -59,13 +59,18 @@ export interface BookingModalProps {
 }
 
 export interface BookingFormData {
-  roomId: number;
-  date: string;
-  startTime: string;
-  endTime: string;
-  meetingName: string;
-  department: string;
-  hostName: string;
+  ID_Room: number;
+  ID_User: string;
+  Topic: string;
+  Purpose: string;
+  ID_User2: number;
+  Time_Start: string;
+  Time_End: string;
+  Name_User: string;
+  DP_User: string;
+  idbpm?: number;
+  dayOnly: string;
+  dayOnlys: string[];
 }
 
 export interface LoginPayload {
@@ -73,6 +78,12 @@ export interface LoginPayload {
   password: string;
   factory: string;
 }
+
+export interface UserInfoPayload {
+  factory: string;
+  userId: string;
+}
+
 export interface Schedule {
   ID_Schedule: number;
   ID_Room: number;
@@ -89,4 +100,24 @@ export interface Schedule {
   Name_User: string;
   DP_User: string;
   Cancel: string | null;
+}
+
+export interface UserInfo {
+  Person_ID: string;
+  Person_Serial_Key: string;
+  Department_Serial_Key: string;
+  Person_Name: string;
+  Birthday: string;
+  ID: string;
+  ID_Day: string;
+  Department_Name: string;
+  Date_Come_In: string;
+  Mobilephone_Number: string;
+  Staying_Address: string;
+  Tax_Code: string;
+  birthday: string;
+  mobilePhoneNumber: string;
+  Email: string;
+  Vehicle: string;
+  Address_Live: string;
 }

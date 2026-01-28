@@ -1,73 +1,75 @@
 {
-    "login": {
-        "login": "Đăng nhập",
-        "logging_in": "Đang đăng nhập...",
-        "please_enter_info": "Vui lòng nhập thông tin của bạn",
-        "id": "Số thẻ",
-        "enter_id": "Nhập số thẻ",
-        "password": "Mật khẩu",
-        "enter_password": "Nhập mật khẩu",
-        "factory": "Nhà máy",
-        "choose_factory": "Chọn nhà máy",
-        "language": "Ngôn ngữ",
-        "vietnamese": "Tiếng Việt",
-        "english": "Tiếng Anh",
-        "validate_empty": {
-            "please_enter_id": "Vui lòng nhập số thẻ của bạn!",
-            "please_enter_pass": "Mật khẩu không được để trống!",
-            "please_choose_fac": "Vui lòng chọn nhà máy!"
-        },
-        "error": {
-            "title": "Đăng nhập thất bại",
-            "text": "Sai tài khoản/mật khẩu hoặc nhà máy",
-            "confirm_btn_txt": "Đóng"
-        }
+  "login": {
+    "login": "Đăng nhập",
+    "logging_in": "Đang đăng nhập...",
+    "please_enter_info": "Vui lòng nhập thông tin của bạn",
+    "id": "Số thẻ",
+    "enter_id": "Nhập số thẻ",
+    "password": "Mật khẩu",
+    "enter_password": "Nhập mật khẩu",
+    "factory": "Nhà máy",
+    "choose_factory": "Chọn nhà máy",
+    "language": "Ngôn ngữ",
+    "vietnamese": "Tiếng Việt",
+    "english": "Tiếng Anh",
+    "taiwan": "Tiếng Trung",
+    "validate_empty": {
+      "please_enter_id": "Vui lòng nhập số thẻ của bạn!",
+      "please_enter_pass": "Mật khẩu không được để trống!",
+      "please_choose_fac": "Vui lòng chọn nhà máy!"
     },
-    "header": {
-        "vietnamese": "Tiếng Việt",
-        "english": "Tiếng Anh",
-        "logout": "Đăng xuất"
-    },
-    "not_found": {
-        "page_not_exist": "Trang không tồn tại",
-        "sorry_message_1": "Xin lỗi, chúng tôi không thể tìm thấy trang bạn đang tìm kiếm.",
-        "sorry_message_2": "Trang có thể đã bị xóa, di chuyển hoặc không tồn tại.",
-        "go_back": "Quay lại",
-        "back_to_homepage": "Về trang chủ"
-    },
-    "filters": {
-        "title": "Bộ lọc phòng họp",
-        "clear_all": "Xóa tất cả bộ lọc",
-        "time": "Thời gian",
-        "all_day": "Cả ngày",
-        "time_range": "Khoảng thời gian",
-        "select_time_range": "Chọn khoảng thời gian",
-        "choose_range": "Chọn khoảng thời gian",
-        "area": "Khu vực",
-        "area_count": "khu vực",
-        "select_factory_first": "Chọn nhà máy để xem khu vực",
-        "capacity": "Sức chứa",
-        "room_status": "Trạng thái phòng họp",
-        "available": "Trống",
-        "occupied": "Có lịch",
-        "factory": "Nhà máy",
-        "cancel": "Hủy",
-        "clear": "Clear",
-        "ok": "OK",
-        "apply": "Áp dụng"
-    },
-    "home": {
-        "filter": "Lọc",
-        "homepage": "Trang chủ",
-        "booking_history": "Lịch sử đặt phòng",
-        "error": {
-            "fetch_rooms": "Không thể tải dữ liệu phòng họp. Vui lòng thử lại."
-        }
-    },
-    "rooms_list": {
-        "no_note_found": "Không tìm thấy phòng họp phù hợp"
-    },
-    "room_card": {
+    "error": {
+      "title": "Đăng nhập thất bại",
+      "text": "Sai tài khoản/mật khẩu hoặc nhà máy",
+      "confirm_btn_txt": "Đóng"
+    }
+  },
+  "header": {
+    "vietnamese": "Tiếng Việt",
+    "english": "Tiếng Anh",
+    "taiwan": "Tiếng Trung",
+    "logout": "Đăng xuất"
+  },
+  "not_found": {
+    "page_not_exist": "Trang không tồn tại",
+    "sorry_message_1": "Xin lỗi, chúng tôi không thể tìm thấy trang bạn đang tìm kiếm.",
+    "sorry_message_2": "Trang có thể đã bị xóa, di chuyển hoặc không tồn tại.",
+    "go_back": "Quay lại",
+    "back_to_homepage": "Về trang chủ"
+  },
+  "filters": {
+    "title": "Bộ lọc phòng họp",
+    "clear_all": "Xóa tất cả bộ lọc",
+    "time": "Thời gian",
+    "all_day": "Cả ngày",
+    "time_range": "Khoảng thời gian",
+    "select_time_range": "Chọn khoảng thời gian",
+    "choose_range": "Chọn khoảng thời gian",
+    "area": "Khu vực",
+    "area_count": "khu vực",
+    "select_factory_first": "Chọn nhà máy để xem khu vực",
+    "capacity": "Sức chứa",
+    "room_status": "Trạng thái phòng họp",
+    "available": "Trống",
+    "occupied": "Có lịch",
+    "factory": "Nhà máy",
+    "cancel": "Hủy",
+    "clear": "Clear",
+    "ok": "OK",
+    "apply": "Áp dụng"
+  },
+  "home": {
+    "filter": "Lọc",
+    "homepage": "Trang chủ",
+    "booking_history": "Lịch sử đặt phòng",
+    "error": {
+      "fetch_rooms": "Không thể tải dữ liệu phòng họp. Vui lòng thử lại."
+    }
+  },
+  "rooms_list": {
+    "no_note_found": "Không tìm thấy phòng họp phù hợp"
+  },
+  "room_card": {
     "preview": "Preview",
     "capacity": "Sức chứa",
     "people": "người",
@@ -81,6 +83,7 @@
     "error": {
       "title": "Lỗi",
       "fetch_failed": "Lấy danh sách đặt phòng thất bại!",
+      "get_info_failed": "Không thể tải phòng ban của người dùng!",
       "confirm_btn": "Đóng"
     },
     "modal": {
@@ -100,8 +103,6 @@
     "meeting_name_placeholder": "Chủ đề cuộc họp",
     "meeting_purpose": "Mục đích cuộc họp",
     "meeting_purpose_placeholder": "Mục đích cuộc họp",
-    "host_info": "Thông tin người chủ trì",
-    "host_name": "Tên người chủ trì",
     "substitute_card": "Số thẻ người thay thế",
     "substitute_card_placeholder": "Số thẻ người thay thế",
     "substitute_name": "Tên người thay thế",
@@ -109,7 +110,7 @@
     "bpm_number": "Số BPM",
     "bpm_number_placeholder": "Nhập số BPM",
     "date_time": "Ngày & Giờ",
-    "select_date_time": "Chọn ngày & giờ",
+    "select_datetime": "Chọn ngày & giờ",
     "select_days": "Chỉ áp dụng các thứ được chọn",
     "select_days_placeholder": "Chọn thứ áp dụng",
     "start": "Bắt đầu",
@@ -122,7 +123,13 @@
     "success": "Đặt phòng thành công!",
     "error": "Đặt phòng thất bại",
     "prev_month": "Tháng trước",
-    "next_month": "Tháng sau"
+    "next_month": "Tháng sau",
+    "monday": "thứ hai",
+    "tuesday": "thứ ba",
+    "wednesday": "thứ tư",
+    "thursday": "thứ năm",
+    "friday": "thứ sáu",
+    "saturday": "thứ bảy"
   },
   "booking_history": {
     "title": "Lịch sử đặt phòng",

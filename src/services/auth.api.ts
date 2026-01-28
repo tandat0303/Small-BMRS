@@ -2,27 +2,25 @@ import type { LoginPayload } from "@/types";
 import axiosConfig from "./axios";
 import storage from "@/lib/storage";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 export const login = async (payload: LoginPayload) => {
-    const data = {
-        ...payload,
-        exponentPushToken: "NO_ACCESS_TO_NOTIFY",
-        DeviceInfo: "web_meeting_room",
-    }
+  const data = {
+    ...payload,
+    exponentPushToken: "NO_ACCESS_TO_NOTIFY",
+    DeviceInfo: "web_meeting_room",
+  };
 
-    const res = await axiosConfig.post(`${API_URL}/auth/login`, data);
+  const res = await axiosConfig.post(`/auth/login`, data);
 
-    const accessToken = res?.data.accessToken;
+  const accessToken = res?.data.accessToken;
 
-    const user = res?.data.user;
+  const user = res?.data.user;
 
-    if (!accessToken || !user) {
-        throw new Error("LOGIN_FAILED");
-    }
+  if (!accessToken || !user) {
+    throw new Error("LOGIN_FAILED");
+  }
 
-    storage.set("accessToken", accessToken);
-    storage.set("user", user);
+  storage.set("accessToken", accessToken);
+  storage.set("user", user);
 
-    return { accessToken, user };
-}
+  return { accessToken, user };
+};

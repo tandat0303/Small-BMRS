@@ -1,7 +1,8 @@
 import { LogOut, User } from "lucide-react";
 import logo from "../assets/logo-LY-sm.png";
-import vn from "../assets/vietnam.png";
-import en from "../assets/united-kingdom.png";
+import vi from "../assets/vi.jpg";
+import en from "../assets/en.jpg";
+import tw from "../assets/tw.jpg";
 import {
   Select,
   SelectContent,
@@ -76,7 +77,7 @@ const Header = () => {
               <SelectItem value="vi" disabled={i18n.language === "vi"}>
                 <div className="flex items-center gap-2">
                   <img
-                    src={vn || "/placeholder.svg"}
+                    src={vi || "/placeholder.svg"}
                     className="w-4 h-4 sm:w-5 sm:h-5"
                     alt="Vietnamese"
                   />
@@ -95,6 +96,19 @@ const Header = () => {
                   />
                   <span className="text-xs sm:text-sm">
                     {t("header.english")}
+                  </span>
+                </div>
+              </SelectItem>
+
+              <SelectItem value="tw" disabled={i18n.language === "tw"}>
+                <div className="flex items-center gap-2">
+                  <img
+                    src={tw || "/placeholder.svg"}
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    alt="Taiwan"
+                  />
+                  <span className="text-xs sm:text-sm">
+                    {t("header.taiwan")}
                   </span>
                 </div>
               </SelectItem>

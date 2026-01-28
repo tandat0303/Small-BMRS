@@ -1,7 +1,8 @@
 import { useState } from "react";
 import logo from "../assets/logo-LY.jpg";
-import vn from "../assets/vietnam.png";
-import en from "../assets/united-kingdom.png";
+import vi from "../assets/vi.jpg";
+import en from "../assets/en.jpg";
+import tw from "../assets/tw.jpg";
 import { Eye, EyeOff } from "lucide-react";
 import {
   Select,
@@ -242,7 +243,7 @@ export default function Login() {
                     >
                       <SelectItem value="vi" disabled={i18n.language === "vi"}>
                         <div className="flex items-center gap-2">
-                          <img src={vn} className="w-5 h-5" alt="Vietnamese" />
+                          <img src={vi} className="w-5 h-5" alt="Vietnamese" />
                           {t("login.vietnamese")}
                         </div>
                       </SelectItem>
@@ -250,6 +251,12 @@ export default function Login() {
                         <div className="flex items-center gap-2">
                           <img src={en} className="w-5 h-5" alt="English" />
                           {t("login.english")}
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="tw" disabled={i18n.language === "tw"}>
+                        <div className="flex items-center gap-2">
+                          <img src={tw} className="w-5 h-5" alt="Taiwan" />
+                          {t("login.taiwan")}
                         </div>
                       </SelectItem>
                     </SelectContent>

@@ -5,13 +5,13 @@ import {
   MapPin,
   Trash2,
   List,
-  Eye,
   Users,
+  Eye,
 } from "lucide-react";
+import { Image } from "antd";
 import type { Schedule } from "../types";
 import { scheduleAPI } from "../services/schedules.api";
 import storage from "@/lib/storage";
-import { AnimatePresence, motion } from "framer-motion";
 import { formatDateTime, isUpcoming } from "@/lib/helpers";
 import { useTranslation } from "react-i18next";
 
@@ -21,7 +21,6 @@ const BookingHistory: React.FC = () => {
   const [meetings, setMeetings] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [previewMeeting, setPreviewMeeting] = useState<Schedule | null>(null);
   const [activeFilter, setActiveFilter] = useState<
     "upcoming" | "completed" | "cancelled"
   >("upcoming");
@@ -169,30 +168,23 @@ const BookingHistory: React.FC = () => {
               >
                 <div className="flex-shrink-0">
                   <div className="relative w-full sm:w-[200px] h-[140px]">
-                    <div
-                      className="w-full h-full bg-gray-100 rounded-lg overflow-hidden group cursor-pointer"
-                      onClick={() => setPreviewMeeting(meeting)}
-                    >
-                      <img
-                        src={imageURL || "/placeholder.svg"}
+                    <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden">
+                      <Image
+                        src={imageURL}
                         alt={meeting.Name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "/api/placeholder/400/300";
+                        width="100%"
+                        height="100%"
+                        style={{
+                          borderRadius: 6,
+                          objectFit: "cover",
+                          display: "block",
                         }}
+                        fallback="/api/placeholder/400/300"
                       />
-
-                      <div className="absolute inset-0 rounded-lg bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <Eye className="w-4 h-4 mr-1 text-white" />
-                        <span className="text-white text-xs font-medium">
-                          {t("booking_history.preview")}
-                        </span>
-                      </div>
                     </div>
 
                     {/* Capacity badge */}
-                    <div className="absolute bottom-2 right-2 flex items-center rounded-full px-2.5 py-1 text-xs bg-white/70 backdrop-blur border shadow-sm">
+                    <div className="absolute bottom-2 right-2 flex items-center rounded-full px-2.5 py-1 text-xs bg-white/70 backdrop-blur border shadow-sm pointer-events-none z-10">
                       <Users className="w-3.5 h-3.5 text-gray-700" />
                       <span className="mx-1 h-3 w-px bg-gray-400" />
                       <span className="text-gray-800 font-medium">
@@ -283,42 +275,6 @@ const BookingHistory: React.FC = () => {
           })}
         </div>
       )}
-
-      <AnimatePresence>
-        {previewMeeting && (
-          <motion.div
-            className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-            onClick={() => setPreviewMeeting(null)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <button
-              onClick={() => setPreviewMeeting(null)}
-              className="absolute top-6 right-6 text-white bg-gray/40 hover:bg-gray/60 rounded-full p-2"
-            >
-              ✕
-            </button>
-
-            <motion.img
-              src={`${IMAGE_URL}/assets/${previewMeeting.imageRoom}`}
-              alt={previewMeeting.Name}
-              className="max-w-full max-h-[90vh] rounded-lg shadow-xl"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-                duration: 0.3,
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

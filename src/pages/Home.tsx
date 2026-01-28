@@ -141,7 +141,7 @@ const Home = () => {
         </div>
 
         {/* Filters Sidebar - Fixed/Non-scrollable */}
-        <div className="order-1 lg:order-2 flex-shrink-0 bg-white lg:bg-transparent hidden lg:block">
+        <div className="order-1 lg:order-2 h-full flex-shrink-0 bg-white lg:bg-transparent hidden lg:block">
           <Filters
             filters={filters}
             setFilters={setFilters}

@@ -1,41 +1,100 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Calendar as CalendarIcon } from "lucide-react";
+import { X } from "lucide-react";
 import storage from "@/lib/storage";
-import {
-  timeToMinutes,
-  getDaysInMonth,
-  formatLocalDate,
-  dayNames,
-} from "@/lib/helpers";
 import { roomAPI } from "@/services/rooms.api";
-import type { BookingModalProps } from "@/types";
+import type { BookingModalProps, UserInfo } from "@/types";
 import { useTranslation } from "react-i18next";
+import { userInfoAPI } from "@/services/userInfo.api";
+import Swal from "sweetalert2";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
+// import "antd/dist/reset.css";
 
 const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   const { t } = useTranslation();
 
+  const [dateTimeRange, setDateTimeRange] = useState<
+    [dayjs.Dayjs | null, dayjs.Dayjs | null]
+  >([null, null]);
+  const [userDept, setUserDept] = useState("");
+  const [userDeptSerialKey, setUserDeptSerialKey] = useState("");
+  const [substituteUser, setSubtituteUser] = useState<UserInfo | null>(null);
+  const user = JSON.parse(storage.get("user") || "{}");
+  const userFac = user.factory;
+  const userId = user.userId;
+
+  const needBpmCheck =
+    Number(room?.Bpm_req) === 1 &&
+    !room?.bpm_area_exc
+      ?.split(",")
+      ?.map((i) => i.trim())
+      ?.includes(userDeptSerialKey) &&
+    userId !== "34333";
+
+  const { RangePicker } = DatePicker;
+
+  useEffect(() => {
+    const getUserDept = async () => {
+      try {
+        const res = await userInfoAPI.getUserInfo({
+          factory: userFac,
+          userId: userId,
+        });
+
+        const info = res?.userInfo?.Department_Name;
+        const deptSK = res?.userInfo?.Department_Serial_Key;
+
+        if (!info) throw new Error("No department");
+
+        setUserDept(info);
+        setUserDeptSerialKey(deptSK);
+      } catch (error) {
+        console.error("Get user info error:", error);
+
+        Swal.fire({
+          title: t("room_card.error.title"),
+          text: t("room_card.error.get_info_failed"),
+          icon: "error",
+          confirmButtonText: t("room_card.error.confirm_btn"),
+          confirmButtonColor: "#ff0000",
+        });
+      }
+    };
+
+    if (userId && userFac) {
+      getUserDept();
+    }
+  }, [userId, userFac]);
+
   const modalRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
-    startDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
-    meetingName: "",
-    meetingPurpose: "",
-    substituteCard: "",
+    Topic: "",
+    Purpose: "",
+    ID_User2: "",
+    Time_Start: "",
+    Time_End: "",
+    Name_User: "",
+    DP_User: "",
+    idbpm: "",
+    dayOnly: "",
+    dayOnlys: [] as string[],
+
     substituteName: "",
-    // bpmNumber: "",
-    daysOfWeek: [] as string[],
+    substituteDept: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [showDaysDropdown, setShowDaysDropdown] = useState(false);
-  const [selectingDate, setSelectingDate] = useState<"start" | "end">("start");
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const hoursScrollRef = useRef<HTMLDivElement>(null);
-  const minutesScrollRef = useRef<HTMLDivElement>(null);
+
+  const dayNames: { [key: string]: string } = {
+    monday: t("booking_modal.monday"),
+    tuesday: t("booking_modal.tuesday"),
+    wednesday: t("booking_modal.wednesday"),
+    thursday: t("booking_modal.thursday"),
+    friday: t("booking_modal.friday"),
+    saturday: t("booking_modal.saturday"),
+  };
 
   // Focus trap: lock focus inside modal when it opens
   useEffect(() => {
@@ -56,46 +115,71 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     };
   }, [onClose]);
 
-  const user = JSON.parse(storage.get("user") || "{}");
+  const removeDayOfWeek = (day: string) => {
+    setFormData({
+      ...formData,
+      dayOnlys: formData.dayOnlys.filter((d) => d !== day),
+    });
+  };
 
-  const isInRange = (date: string) =>
-    formData.startDate &&
-    formData.endDate &&
-    date > formData.startDate &&
-    date < formData.endDate;
-
-  const isSubmitDisabled =
-    loading ||
-    !formData.startDate ||
-    !formData.startTime ||
-    !formData.endDate ||
-    !formData.endTime;
+  const handleDayToggle = (day: string) => {
+    setFormData({
+      ...formData,
+      dayOnlys: formData.dayOnlys.includes(day)
+        ? formData.dayOnlys.filter((d) => d !== day)
+        : [...formData.dayOnlys, day],
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitDisabled) return;
 
+    if (!isValidTimeRange()) {
+      setError("Thời gian họp phải trong khoảng 07:00–17:00");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const startDateTime = `${formData.startDate} ${formData.startTime}:00`;
-      const endDateTime = `${formData.endDate || formData.startDate} ${formData.endTime}:00`;
+      let allowBooking = true;
+
+      if (needBpmCheck) {
+        if (!formData.idbpm) {
+          setError("Vui lòng nhập số BPM");
+          setLoading(false);
+          return;
+        }
+
+        const bpmRes = await roomAPI.checkBPMSign(formData.idbpm);
+
+        if (bpmRes?.issign === 0) {
+          setError("Phiếu BPM chưa được ký duyệt");
+          allowBooking = false;
+        }
+      }
+
+      if (!allowBooking) {
+        setLoading(false);
+        return;
+      }
 
       await roomAPI.bookRoom({
-        roomId: room.ID_Room,
-        userId: user.userId,
-        fullName: user.fullName,
-        startTime: startDateTime,
-        endTime: endDateTime,
-        meetingName: formData.meetingName,
-        meetingPurpose: formData.meetingPurpose,
-        department: "",
-        hostName: "",
-        substituteCard: formData.substituteCard,
-        substituteName: formData.substituteName,
-        // bpmNumber: formData.bpmNumber,
-        daysOfWeek: formData.daysOfWeek,
+        ID_Room: room.ID_Room,
+        ID_User: user.userId,
+        Topic: formData.Topic,
+        Purpose: formData.Purpose,
+        ID_User2: formData.ID_User2 ? Number(formData.ID_User2) : 0,
+        Time_Start: formData.Time_Start,
+        Time_End: formData.Time_End,
+        Name_User: substituteUser?.Person_Name || user.fullName,
+        DP_User: substituteUser?.Department_Name || userDept,
+        idbpm: formData.idbpm ? Number(formData.idbpm) : 0,
+        dayOnly: formData.dayOnly,
+        dayOnlys: formData.dayOnlys,
       });
 
       setSuccess(true);
@@ -105,7 +189,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || "Đặt phòng thất bại");
-      console.error("Booking error:", err);
     } finally {
       setLoading(false);
     }
@@ -122,326 +205,68 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     });
   };
 
-  const handleDayToggle = (day: string) => {
-    setFormData({
-      ...formData,
-      daysOfWeek: formData.daysOfWeek.includes(day)
-        ? formData.daysOfWeek.filter((d) => d !== day)
-        : [...formData.daysOfWeek, day],
-    });
-  };
+  const handleSubstituteBlur = async () => {
+    if (!formData.ID_User2) return;
 
-  const handleClearDateTime = () => {
-    setFormData((p) => ({
-      ...p,
-      startDate: "",
-      endDate: "",
-      startTime: "",
-      endTime: "",
-      daysOfWeek: [],
-    }));
+    try {
+      const res = await userInfoAPI.getUserInfo({
+        factory: userFac,
+        userId: formData.ID_User2,
+      });
 
-    setSelectingDate("start");
-  };
+      const info = res?.userInfo;
+      setSubtituteUser(info);
 
-  const removeDayOfWeek = (day: string) => {
-    setFormData({
-      ...formData,
-      daysOfWeek: formData.daysOfWeek.filter((d) => d !== day),
-    });
-  };
+      if (!info) throw new Error("User not found");
 
-  const handleDateSelect = (day: number) => {
-    const y = currentMonth.getFullYear();
-    const m = currentMonth.getMonth();
-    const selectedDateObj = new Date(y, m, day);
-    const selected = formatLocalDate(selectedDateObj);
-
-    const today = formatLocalDate(new Date());
-
-    if (selectingDate === "start") {
-      if (selected < today) return;
-      setFormData((p) => ({
-        ...p,
-        startDate: selected,
-        endDate: selected,
+      setFormData((prev) => ({
+        ...prev,
+        substituteName: info.Person_Name,
+        substituteDept: info.Department_Name,
+        DP_User: info.Department_Name,
+        Name_User: info.User_Name,
       }));
-    } else {
-      if (!formData.startDate) return;
-      if (selected < formData.startDate) return;
-      setFormData((p) => ({ ...p, endDate: selected }));
+    } catch (error) {
+      console.error("Get substitute info error:", error);
+
+      setFormData((prev) => ({
+        ...prev,
+        substituteName: "",
+        substituteDept: "",
+      }));
+
+      Swal.fire({
+        title: t("room_card.error.title"),
+        text: "Không tìm thấy người dùng thay thế",
+        icon: "error",
+        confirmButtonColor: "#ff0000",
+      });
     }
   };
 
-  const renderCalendar = () => {
-    const { days, start } = getDaysInMonth(currentMonth);
-    const cells = [];
-    const monthName = currentMonth.toLocaleString("vi-VN", {
-      month: "short",
-      year: "numeric",
-    });
+  const handleTimeChange = (values: any) => {
+    if (!values) return;
 
-    for (let i = 0; i < start; i++) cells.push(<div key={`e-${i}`} />);
+    const [start, end] = values;
 
-    for (let d = 1; d <= days; d++) {
-      const dateObj = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        d,
-      );
-      const date = formatLocalDate(dateObj);
+    setDateTimeRange(values);
 
-      const isStart = date === formData.startDate;
-      const isEnd = date === formData.endDate;
-      const today = formatLocalDate(new Date());
-
-      const disabled =
-        (selectingDate === "start" && date < today) ||
-        (selectingDate === "end" && date < formData.startDate);
-
-      cells.push(
-        <button
-          key={d}
-          disabled={disabled}
-          onClick={() => handleDateSelect(d)}
-          className={`text-xs py-1.5 rounded font-medium
-            ${isStart || isEnd ? "bg-blue-500 text-white" : ""}
-            ${isInRange(date) ? "bg-blue-100 text-blue-700" : ""}
-            ${disabled ? "text-gray-300 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700"}
-          `}
-        >
-          {d}
-        </button>,
-      );
-    }
-
-    const dayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-    return (
-      <div className="w-56">
-        {/* Month header with navigation */}
-        <div className="flex items-center justify-between mb-4 px-2">
-          <button
-            type="button"
-            onClick={() =>
-              setCurrentMonth(
-                new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth() - 1,
-                ),
-              )
-            }
-            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
-          >
-            &lt;&lt;
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              setCurrentMonth(
-                new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth() - 1,
-                ),
-              )
-            }
-            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
-          >
-            &lt;
-          </button>
-          <span className="text-sm font-semibold text-gray-700 flex-1 text-center">
-            {monthName}
-          </span>
-          <button
-            type="button"
-            onClick={() =>
-              setCurrentMonth(
-                new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth() + 1,
-                ),
-              )
-            }
-            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
-          >
-            &gt;
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              setCurrentMonth(
-                new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth() + 1,
-                ),
-              )
-            }
-            className="px-1.5 py-1 hover:bg-gray-100 rounded text-gray-600 text-sm"
-          >
-            &gt;&gt;
-          </button>
-        </div>
-
-        {/* Day labels */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {dayLabels.map((day) => (
-            <div
-              key={day}
-              className="text-xs font-semibold text-gray-600 text-center py-1"
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">{cells}</div>
-      </div>
-    );
+    setFormData((prev) => ({
+      ...prev,
+      Time_Start: start ? start.format("YYYY-MM-DD HH:mm") : "",
+      Time_End: end ? end.format("YYYY-MM-DD HH:mm") : "",
+    }));
   };
 
-  const renderTime = () => {
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const isToday = formData.startDate === formatLocalDate(new Date());
+  const isSubmitDisabled =
+    loading || !formData.Time_End || !formData.Time_Start;
 
-    const hours = Array.from({ length: 16 }, (_, i) => i + 7);
-    const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
-    const startMin = formData.startTime
-      ? timeToMinutes(formData.startTime)
-      : null;
+  const isValidTimeRange = () => {
+    const start = dayjs(formData.Time_Start);
+    const end = dayjs(formData.Time_End);
 
-    const current =
-      selectingDate === "start" ? formData.startTime : formData.endTime;
-    const currentHour = current ? Number(current.split(":")[0]) : 7;
-    const currentMinute = current ? Number(current.split(":")[1]) : 0;
-
-    return (
-      <div className="flex gap-6 h-80 ml-6 border-l border-gray-300 pl-6">
-        {/* Hours List */}
-        <div className="flex flex-col w-16">
-          <h3 className="text-xs font-semibold text-gray-600 mb-2 text-center">
-            {t("booking_modal.hour")}
-          </h3>
-          <div
-            ref={hoursScrollRef}
-            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded"
-          >
-            <div className="flex flex-col gap-1">
-              {hours.map((h) => {
-                const hourMin = h * 60;
-
-                const afterWorkHour = h >= 17;
-
-                const disabled =
-                  afterWorkHour ||
-                  (selectingDate === "end" &&
-                    startMin !== null &&
-                    hourMin < startMin) ||
-                  (selectingDate === "start" &&
-                    isToday &&
-                    hourMin < nowMinutes);
-
-                const isSelected =
-                  current && Number(current.split(":")[0]) === h;
-
-                return (
-                  <button
-                    key={h}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() =>
-                      setFormData((p) => ({
-                        ...p,
-                        [selectingDate === "start" ? "startTime" : "endTime"]:
-                          `${h.toString().padStart(2, "0")}:${currentMinute
-                            .toString()
-                            .padStart(2, "0")}`,
-                      }))
-                    }
-                    className={`py-2 px-2 text-sm rounded font-medium transition-all duration-150 text-center ${
-                      isSelected
-                        ? "bg-blue-500 text-white shadow-md"
-                        : disabled
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {h.toString().padStart(2, "0")}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Minutes List */}
-        <div className="flex flex-col w-16">
-          <h3 className="text-xs font-semibold text-gray-600 mb-2 text-center">
-            {t("booking_modal.minutes")}
-          </h3>
-          <div
-            ref={minutesScrollRef}
-            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded"
-          >
-            <div className="flex flex-col gap-1">
-              {minutes.map((m) => {
-                const totalMin = currentHour * 60 + m;
-
-                const afterWorkHour = currentHour >= 17;
-
-                const disabled =
-                  afterWorkHour ||
-                  (selectingDate === "end" &&
-                    startMin !== null &&
-                    totalMin < startMin) ||
-                  (selectingDate === "start" &&
-                    isToday &&
-                    totalMin < nowMinutes);
-
-                const isSelected =
-                  current &&
-                  Number(current.split(":")[0]) === currentHour &&
-                  Number(current.split(":")[1]) === m;
-
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() =>
-                      setFormData((p) => ({
-                        ...p,
-                        [selectingDate === "start" ? "startTime" : "endTime"]:
-                          `${currentHour.toString().padStart(2, "0")}:${m
-                            .toString()
-                            .padStart(2, "0")}`,
-                      }))
-                    }
-                    className={`py-2 px-2 text-sm rounded font-medium transition-all duration-150 text-center ${
-                      isSelected
-                        ? "bg-blue-500 text-white shadow-md"
-                        : disabled
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {m.toString().padStart(2, "0")}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return start.hour() >= 7 && end.hour() < 17 && end.isAfter(start);
   };
-
-  const isDateTimeValid =
-    formData.startDate &&
-    formData.startTime &&
-    formData.endDate &&
-    formData.endTime;
 
   return (
     <div
@@ -495,7 +320,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           />
           <input
             type="text"
-            value={user.fullName}
+            value={`${user.fullName} - ${userDept}`}
             disabled
             className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-600 text-sm"
           />
@@ -503,189 +328,81 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           {/* Meeting Fields */}
           <input
             type="text"
-            name="meetingName"
-            value={formData.meetingName}
+            name="Topic"
+            value={formData.Topic}
             onChange={handleChange}
             placeholder={t("booking_modal.meeting_name_placeholder")}
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
           <input
             type="text"
-            name="meetingPurpose"
-            value={formData.meetingPurpose}
+            name="Purpose"
+            value={formData.Purpose}
             onChange={handleChange}
             placeholder={t("booking_modal.meeting_purpose_placeholder")}
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
           <input
             type="text"
-            name="substituteCard"
-            value={formData.substituteCard}
+            name="ID_User2"
+            value={formData.ID_User2}
             onChange={handleChange}
+            onBlur={handleSubstituteBlur}
             placeholder={t("booking_modal.substitute_card_placeholder")}
             className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
           />
           <input
             type="text"
-            name="substituteName"
-            value={formData.substituteName}
-            onChange={handleChange}
-            placeholder={t("booking_modal.substitute_name_placeholder")}
-            className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
+            disabled
+            value={
+              formData.substituteName
+                ? `${formData.substituteName} - ${formData.substituteDept}`
+                : ""
+            }
+            placeholder={t("booking_modal.substitute_name")}
+            className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-600 text-sm"
           />
-          {/* <input
-            type="text"
-            name="bpmNumber"
-            value={formData.bpmNumber}
-            onChange={handleChange}
-            placeholder="Số phiếu BPM"
-            className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
-          /> */}
 
-          {/* DateTime */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowCalendar(true)}
-              className="w-full border px-3 py-2 rounded pr-10 flex items-center"
-            >
-              <CalendarIcon className="w-4 h-4 mr-3 text-gray-500 shrink-0" />
-
-              {!formData.startDate ? (
-                <span className="text-gray-400 text-sm">
-                  {t("booking_modal.select_date_time")}
-                </span>
-              ) : (
-                <div className="flex items-center w-full text-sm font-medium text-gray-700">
-                  {/* START */}
-                  <span className="whitespace-nowrap">
-                    {formData.startDate} {formData.startTime}
-                  </span>
-
-                  {/* ARROW CENTER */}
-                  <span className="flex-1 text-center text-gray-400 font-normal">
-                    →
-                  </span>
-
-                  {/* END */}
-                  <span className="whitespace-nowrap text-right">
-                    {formData.endDate} {formData.endTime}
-                  </span>
-                </div>
-              )}
-            </button>
-            {formData.startDate && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleClearDateTime();
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2
-                          w-6 h-6 flex items-center justify-center
-                          rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-          {/* Animated dropdown */}
-          {showCalendar && (
-            <div
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[9999]"
-              onClick={() => setShowCalendar(false)}
-            >
-              <div
-                className="bg-white rounded-lg p-5 animate-in zoom-in-95 fade-in duration-200 shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Tab Selection */}
-                <div className="flex gap-2 mb-4">
-                  {["start", "end"].map((time) => {
-                    const isEnd = time === "end";
-                    const disableEnd = isEnd && !formData.startDate;
-
-                    return (
-                      <button
-                        key={time}
-                        type="button"
-                        disabled={disableEnd}
-                        onClick={() =>
-                          !disableEnd && setSelectingDate(t as any)
-                        }
-                        className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors
-                          ${
-                            selectingDate === time
-                              ? "bg-blue-500 text-white"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }
-                          ${disableEnd ? "opacity-40 cursor-not-allowed" : ""}
-                        `}
-                      >
-                        {time === "start"
-                          ? t("booking_modal.start")
-                          : t("booking_modal.end")}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Calendar and Time Picker */}
-                <div className="flex gap-4">
-                  {renderCalendar()}
-                  {renderTime()}
-                </div>
-
-                {/* Selected Time Display */}
-                <div className="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
-                  {formData.startDate &&
-                    formData.startTime &&
-                    formData.endDate &&
-                    formData.endTime && (
-                      <div className="text-gray-700 font-medium">
-                        {formData.startDate} {formData.startTime} →{" "}
-                        {formData.endDate} {formData.endTime}
-                      </div>
-                    )}
-                </div>
-
-                <div className="flex justify-between items-center mt-4">
-                  <button
-                    type="button"
-                    onClick={handleClearDateTime}
-                    className="px-4 py-2 text-sm rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                  >
-                    {t("booking_modal.clear")}
-                  </button>
-
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowCalendar(false)}
-                      className="px-5 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-sm"
-                    >
-                      {t("booking_modal.cancel")}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={!isDateTimeValid}
-                      onClick={() => isDateTimeValid && setShowCalendar(false)}
-                      className={`px-5 py-2 rounded text-sm transition-colors
-                        ${
-                          isDateTimeValid
-                            ? "bg-blue-500 text-white hover:bg-blue-600"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }
-                      `}
-                    >
-                      {t("booking_modal.ok")}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {needBpmCheck && (
+            <input
+              type="text"
+              name="idbpm"
+              value={formData.idbpm}
+              onChange={handleChange}
+              placeholder="Số phiếu BPM"
+              className="w-full px-3 py-2 border border-red-400 rounded focus:outline-none focus:ring-1 focus:ring-red-400 text-sm"
+            />
           )}
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("booking_modal.select_datetime")}
+            </label>
+
+            <RangePicker
+              showTime={{
+                format: "HH:mm",
+                minuteStep: 5,
+                hideDisabledOptions: true,
+                disabledHours: () => [
+                  ...Array.from({ length: 7 }, (_, i) => i),
+                  ...Array.from({ length: 7 }, (_, i) => i + 17),
+                ],
+                disabledMinutes: () => [],
+              }}
+              format="YYYY-MM-DD HH:mm"
+              value={dateTimeRange}
+              onChange={handleTimeChange}
+              className="w-full"
+              placeholder={[t("booking_modal.start"), t("booking_modal.end")]}
+              disabledDate={(current) =>
+                current && current < dayjs().startOf("day")
+              }
+            />
+          </div>
+
+          {/* Days */}
+          <div className="relative"></div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t("booking_modal.select_days")}
@@ -697,13 +414,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                 className="w-full min-h-[42px] px-2 py-1 border border-blue-400 rounded
                     flex items-center gap-1 overflow-x-auto bg-white text-sm"
               >
-                {formData.daysOfWeek.length === 0 && (
+                {formData.dayOnlys.length === 0 && (
                   <span className="text-gray-400 px-1 whitespace-nowrap">
                     {t("booking_modal.select_days_placeholder")}
                   </span>
                 )}
 
-                {formData.daysOfWeek.map((day) => (
+                {formData.dayOnlys.map((day) => (
                   <span
                     key={day}
                     onClick={(e) => e.stopPropagation()}
@@ -731,7 +448,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                     </h3>
 
                     {Object.entries(dayNames).map(([value, label]) => {
-                      const active = formData.daysOfWeek.includes(value);
+                      const active = formData.dayOnlys.includes(value);
                       return (
                         <button
                           key={value}
