@@ -68,9 +68,9 @@ export interface BookingFormData {
   Time_End: string;
   Name_User: string;
   DP_User: string;
-  idbpm?: number;
+  idbpm?: string;
   dayOnly: string;
-  dayOnlys: string[];
+  // dayOnlys: string[];
 }
 
 export interface LoginPayload {

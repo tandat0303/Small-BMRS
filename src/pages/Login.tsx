@@ -38,7 +38,7 @@ export default function Login() {
         t("login.validate_empty.please_enter_pass"),
       ),
       factory: Yup.string().required(
-        t("login.validate_empty.please_enter_fac"),
+        t("login.validate_empty.please_choose_fac"),
       ),
     }),
     onSubmit: async (values) => {

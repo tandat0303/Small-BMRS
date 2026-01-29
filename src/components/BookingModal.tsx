@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import storage from "@/lib/storage";
 import { roomAPI } from "@/services/rooms.api";
-import type { BookingModalProps, UserInfo } from "@/types";
+import type { BookingModalProps } from "@/types";
 import { useTranslation } from "react-i18next";
 import { userInfoAPI } from "@/services/userInfo.api";
 import Swal from "sweetalert2";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
-// import "antd/dist/reset.css";
 
 const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   const { t } = useTranslation();
@@ -18,7 +17,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   >([null, null]);
   const [userDept, setUserDept] = useState("");
   const [userDeptSerialKey, setUserDeptSerialKey] = useState("");
-  const [substituteUser, setSubtituteUser] = useState<UserInfo | null>(null);
   const user = JSON.parse(storage.get("user") || "{}");
   const userFac = user.factory;
   const userId = user.userId;
@@ -41,13 +39,21 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           userId: userId,
         });
 
-        const info = res?.userInfo?.Department_Name;
-        const deptSK = res?.userInfo?.Department_Serial_Key;
+        const info = res?.userInfo;
 
-        if (!info) throw new Error("No department");
+        const deptName = info?.Department_Name;
+        const deptSK = info?.Department_Serial_Key;
 
-        setUserDept(info);
+        if (!deptName) throw new Error("No department");
+
+        setUserDept(deptName);
         setUserDeptSerialKey(deptSK);
+
+        setFormData((prev) => ({
+          ...prev,
+          Name_User: info.Person_Name,
+          DP_User: deptName,
+        }));
       } catch (error) {
         console.error("Get user info error:", error);
 
@@ -83,8 +89,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     substituteDept: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [showDaysDropdown, setShowDaysDropdown] = useState(false);
 
   const dayNames: { [key: string]: string } = {
@@ -115,6 +119,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     };
   }, [onClose]);
 
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      dayOnly: formData.dayOnlys.join(","),
+    }));
+  }, [formData.dayOnlys]);
+
   const removeDayOfWeek = (day: string) => {
     setFormData({
       ...formData,
@@ -136,20 +147,21 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     if (isSubmitDisabled) return;
 
     if (!isValidTimeRange()) {
-      setError("Thời gian họp phải trong khoảng 07:00–17:00");
-      setLoading(false);
       return;
     }
 
     setLoading(true);
-    setError(null);
 
     try {
       let allowBooking = true;
 
       if (needBpmCheck) {
         if (!formData.idbpm) {
-          setError("Vui lòng nhập số BPM");
+          Swal.fire({
+            icon: "warning",
+            title: t("booking_modal.error.title"),
+            text: t("booking_modal.error.enter_bpm"),
+          });
           setLoading(false);
           return;
         }
@@ -157,7 +169,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         const bpmRes = await roomAPI.checkBPMSign(formData.idbpm);
 
         if (bpmRes?.issign === 0) {
-          setError("Phiếu BPM chưa được ký duyệt");
+          Swal.fire({
+            icon: "error",
+            title: t("booking_modal.error.title"),
+            text: t("booking_modal.error.bpm_not_sign"),
+          });
           allowBooking = false;
         }
       }
@@ -167,28 +183,40 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         return;
       }
 
+      const startISO = dayjs(formData.Time_Start).format("YYYY-MM-DD HH:mm:ss");
+      const endISO = dayjs(formData.Time_End).format("YYYY-MM-DD HH:mm:ss");
+
       await roomAPI.bookRoom({
         ID_Room: room.ID_Room,
         ID_User: user.userId,
         Topic: formData.Topic,
         Purpose: formData.Purpose,
-        ID_User2: formData.ID_User2 ? Number(formData.ID_User2) : 0,
-        Time_Start: formData.Time_Start,
-        Time_End: formData.Time_End,
-        Name_User: substituteUser?.Person_Name || user.fullName,
-        DP_User: substituteUser?.Department_Name || userDept,
-        idbpm: formData.idbpm ? Number(formData.idbpm) : 0,
+        ID_User2: formData.ID_User2 || user.userId,
+        Time_Start: startISO,
+        Time_End: endISO,
+        Name_User: formData.Name_User,
+        DP_User: formData.DP_User,
+        idbpm: formData.idbpm || "",
         dayOnly: formData.dayOnly,
-        dayOnlys: formData.dayOnlys,
       });
 
-      setSuccess(true);
-      setTimeout(() => {
+      Swal.fire({
+        icon: "success",
+        title: t("booking_modal.success"),
+        showConfirmButton: false,
+        timer: 1500,
+      }).then(() => {
         onClose();
         window.location.reload();
-      }, 2000);
+      });
     } catch (err: any) {
-      setError(err.response?.data?.message || "Đặt phòng thất bại");
+      Swal.fire({
+        icon: "error",
+        title: t("booking_modal.error.title"),
+        text:
+          err.response?.data?.message ||
+          t("booking_modal.error.booking_failed"),
+      });
     } finally {
       setLoading(false);
     }
@@ -215,7 +243,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       });
 
       const info = res?.userInfo;
-      setSubtituteUser(info);
 
       if (!info) throw new Error("User not found");
 
@@ -223,8 +250,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         ...prev,
         substituteName: info.Person_Name,
         substituteDept: info.Department_Name,
-        DP_User: info.Department_Name,
-        Name_User: info.User_Name,
       }));
     } catch (error) {
       console.error("Get substitute info error:", error);
@@ -237,7 +262,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
       Swal.fire({
         title: t("room_card.error.title"),
-        text: "Không tìm thấy người dùng thay thế",
+        text: "Không tìm thấy người thay thế",
         icon: "error",
         confirmButtonColor: "#ff0000",
       });
@@ -259,13 +284,21 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   };
 
   const isSubmitDisabled =
-    loading || !formData.Time_End || !formData.Time_Start;
+    loading ||
+    !formData.Topic.trim() ||
+    !formData.Purpose.trim() ||
+    !formData.ID_User2.trim() ||
+    !formData.Time_Start ||
+    !formData.Time_End ||
+    (needBpmCheck && !formData.idbpm.trim());
 
   const isValidTimeRange = () => {
     const start = dayjs(formData.Time_Start);
     const end = dayjs(formData.Time_End);
 
-    return start.hour() >= 7 && end.hour() < 17 && end.isAfter(start);
+    if (!start.isValid() || !end.isValid()) return false;
+
+    return end.isAfter(start) && start.hour() >= 7 && end.hour() < 17;
   };
 
   return (
@@ -296,18 +329,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Success/Error Messages */}
-        {success && (
-          <div className="mx-5 mt-3 bg-green-50 border border-green-200 rounded p-3 text-green-700 text-sm">
-            {t("booking_modal.success")}
-          </div>
-        )}
-        {error && (
-          <div className="mx-5 mt-3 bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm">
-            {t("booking_modal.error")}
-          </div>
-        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-3">
@@ -384,20 +405,66 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                 format: "HH:mm",
                 minuteStep: 5,
                 hideDisabledOptions: true,
-                disabledHours: () => [
-                  ...Array.from({ length: 7 }, (_, i) => i),
-                  ...Array.from({ length: 7 }, (_, i) => i + 17),
-                ],
-                disabledMinutes: () => [],
               }}
               format="YYYY-MM-DD HH:mm"
               value={dateTimeRange}
               onChange={handleTimeChange}
               className="w-full"
-              placeholder={[t("booking_modal.start"), t("booking_modal.end")]}
-              disabledDate={(current) =>
-                current && current < dayjs().startOf("day")
-              }
+              disabledDate={(current) => {
+                if (!current) return false;
+
+                const [start] = dateTimeRange;
+
+                if (current < dayjs().startOf("day")) return true;
+
+                if (start && current.isBefore(start, "day")) return true;
+
+                return false;
+              }}
+              disabledTime={(date, type) => {
+                if (!date) return {};
+
+                const now = dayjs();
+                const [start] = dateTimeRange;
+
+                if (date.isSame(now, "day")) {
+                  const currentHour = now.hour();
+                  const currentMinute = now.minute();
+
+                  return {
+                    disabledHours: () =>
+                      Array.from({ length: currentHour }, (_, i) => i),
+
+                    disabledMinutes: (hour: number) =>
+                      hour === currentHour
+                        ? Array.from({ length: currentMinute }, (_, i) => i)
+                        : [],
+                  };
+                }
+
+                if (type === "end" && start && date.isSame(start, "day")) {
+                  const startHour = start.hour();
+                  const startMinute = start.minute();
+
+                  return {
+                    disabledHours: () =>
+                      Array.from({ length: startHour }, (_, i) => i),
+
+                    disabledMinutes: (hour: number) =>
+                      hour === startHour
+                        ? Array.from({ length: startMinute }, (_, i) => i)
+                        : [],
+                  };
+                }
+
+                return {
+                  disabledHours: () => [
+                    ...Array.from({ length: 7 }, (_, i) => i),
+                    ...Array.from({ length: 7 }, (_, i) => i + 17),
+                  ],
+                  disabledMinutes: () => [],
+                };
+              }}
             />
           </div>
 
@@ -485,7 +552,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           <div className="justify-center pt-2 flex">
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitDisabled}
               className="w-fit bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded font-medium transition-colors disabled:bg-blue-300 text-sm"
             >
               {loading

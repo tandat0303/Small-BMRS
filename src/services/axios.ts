@@ -1,6 +1,6 @@
 import storage from "@/lib/storage";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { navigateTo } from "./navigation";
 
 const axiosConfig = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -27,13 +27,11 @@ axiosConfig.interceptors.request.use(
 axiosConfig.interceptors.response.use(
   (response) => response,
   (error) => {
-    const navigate = useNavigate();
-
     if (error.response?.status === 401) {
       storage.remove("accessToken");
       storage.remove("user");
 
-      navigate("/login");
+      navigateTo("/login");
     }
     return Promise.reject(error);
   },

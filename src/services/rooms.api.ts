@@ -14,7 +14,9 @@ export const roomAPI = {
 
   bookRoom: async (data: BookingFormData): Promise<any> => {
     try {
-      const response = await axiosConfig.post(`/bookmeeting/addmeeting`, data);
+      const response = await axiosConfig.post(`/bookmeeting/addmeeting/`, {
+        meeting: data,
+      });
       return response.data;
     } catch (error) {
       console.error("Error booking room:", error);

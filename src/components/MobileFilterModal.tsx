@@ -42,6 +42,25 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
     }
   }, []);
 
+  // Sync local date/time state with filters when opening modal
+  useEffect(() => {
+    if (showDateModal && filters.timeFilter.mode === "range") {
+      if (filters.timeFilter.startDateTime && filters.timeFilter.endDateTime) {
+        const start = new Date(filters.timeFilter.startDateTime);
+        const end = new Date(filters.timeFilter.endDateTime);
+
+        setStartDate(start);
+        setEndDate(end);
+        setStartTime(
+          `${start.getHours().toString().padStart(2, "0")}:${start.getMinutes().toString().padStart(2, "0")}`,
+        );
+        setEndTime(
+          `${end.getHours().toString().padStart(2, "0")}:${end.getMinutes().toString().padStart(2, "0")}`,
+        );
+      }
+    }
+  }, [showDateModal, filters.timeFilter]);
+
   const toggleArea = (area: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -75,6 +94,12 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
   };
 
   const clearFilters = () => {
+    // Clear local date/time state
+    setStartDate(null);
+    setEndDate(null);
+    setStartTime("");
+    setEndTime("");
+
     setFilters({
       dateRange: { start: null, end: null },
       areas: [],
@@ -195,10 +220,11 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
               className="px-3 py-2 text-sm rounded border transition-colors mt-2 border-gray-300 text-gray-600 hover:bg-gray-50 cursor-pointer"
               ref={timeRangeRef}
             >
-              {filters.timeFilter.startDateTime ? (
+              {filters.timeFilter.startDateTime &&
+              filters.timeFilter.endDateTime ? (
                 formatRangeLabel(
                   filters.timeFilter.startDateTime,
-                  filters.timeFilter.endDateTime!,
+                  filters.timeFilter.endDateTime,
                 )
               ) : (
                 <span className="ml-1">{t("filters.select_time_range")}</span>
@@ -351,44 +377,67 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                 {t("filters.choose_range")}
               </h2>
 
-              <input
-                type="date"
-                min={new Date().toISOString().split("T")[0]}
-                value={startDate?.toISOString().split("T")[0] || ""}
-                onChange={(e) => {
-                  const d = new Date(e.target.value);
-                  setStartDate(d);
-                  setEndDate(d);
-                }}
-                className="border p-2 w-full mb-2 rounded"
-              />
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  {t("filters.start_date")}
+                </label>
+                <input
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  value={startDate?.toISOString().split("T")[0] || ""}
+                  onChange={(e) => {
+                    const d = new Date(e.target.value);
+                    setStartDate(d);
+                    if (!endDate || d > endDate) {
+                      setEndDate(d);
+                    }
+                  }}
+                  className="border p-2 w-full rounded"
+                />
+              </div>
 
-              <input
-                type="date"
-                min={startDate?.toISOString().split("T")[0]}
-                value={endDate?.toISOString().split("T")[0] || ""}
-                onChange={(e) => setEndDate(new Date(e.target.value))}
-                className="border p-2 w-full mb-3 rounded"
-              />
+              <div className="space-y-2 mt-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  {t("filters.end_date")}
+                </label>
+                <input
+                  type="date"
+                  min={startDate?.toISOString().split("T")[0]}
+                  value={endDate?.toISOString().split("T")[0] || ""}
+                  onChange={(e) => setEndDate(new Date(e.target.value))}
+                  className="border p-2 w-full rounded"
+                  disabled={!startDate}
+                />
+              </div>
 
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="border p-2 w-full mb-2 rounded"
-              />
+              <div className="space-y-2 mt-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  {t("filters.start_time")}
+                </label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="border p-2 w-full rounded"
+                />
+              </div>
 
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="border p-2 w-full mb-4 rounded"
-              />
+              <div className="space-y-2 mt-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  {t("filters.end_time")}
+                </label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="border p-2 w-full rounded"
+                />
+              </div>
 
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 mt-6">
                 <button
                   onClick={() => setShowDateModal(false)}
-                  className="bg-gray-400 text-white px-4 py-1 rounded hover:bg-gray-300"
+                  className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
                 >
                   {t("filters.cancel")}
                 </button>
@@ -409,13 +458,13 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                       },
                     }));
                   }}
-                  className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-400"
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                 >
                   {t("filters.clear")}
                 </button>
 
                 <button
-                  disabled={!startDate || !startTime || !endTime}
+                  disabled={!startDate || !endDate || !startTime || !endTime}
                   onClick={() => {
                     const startDT = new Date(
                       `${startDate?.toISOString().split("T")[0]}T${startTime}`,
@@ -435,7 +484,7 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
 
                     setShowDateModal(false);
                   }}
-                  className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-40"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
                   {t("filters.ok")}
                 </button>

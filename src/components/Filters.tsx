@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Filter, RefreshCcw } from "lucide-react";
 import type { FilterProps } from "../types";
-import { AnimatePresence, motion } from "framer-motion";
-import { formatRangeLabel } from "@/lib/helpers";
 import storage from "@/lib/storage";
 import { useTranslation } from "react-i18next";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const Filters: React.FC<FilterProps> = ({
   filters,
@@ -15,15 +15,21 @@ const Filters: React.FC<FilterProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const user = JSON.parse(storage.get("user"));
+
+  const isShowFactoryRadio = ["5", "7", 5, 7].includes(user?.level);
+
   const [showDateModal, setShowDateModal] = useState(false);
   const [userDefaultFactory, setUserDefaultFactory] = useState<string>("");
 
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [startTime, setStartTime] = useState<string>("");
-  const [endTime, setEndTime] = useState<string>("");
+  const [range, setRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([
+    null,
+    null,
+  ]);
 
   const timeRangeRef = useRef<HTMLDivElement>(null);
+
+  const { RangePicker } = DatePicker;
 
   const capacities = [5, 10, 50, 100, 200];
   const factories = ["LYV", "LHG", "LYM"];
@@ -36,7 +42,6 @@ const Filters: React.FC<FilterProps> = ({
   }, [rooms]);
 
   useEffect(() => {
-    const user = JSON.parse(storage.get("user"));
     const userFactory = user?.factory;
 
     if (userFactory) {
@@ -71,15 +76,6 @@ const Filters: React.FC<FilterProps> = ({
     }));
   };
 
-  // const toggleCapacity = (capacity: number) => {
-  //   setFilters((prev) => ({
-  //     ...prev,
-  //     capacities: prev.capacities.includes(capacity)
-  //       ? prev.capacities.filter((c) => c !== capacity)
-  //       : [...prev.capacities, capacity],
-  //   }));
-  // };
-
   const toggleCapacity = (capacity: number) => {
     setFilters((prev) => ({
       ...prev,
@@ -104,6 +100,8 @@ const Filters: React.FC<FilterProps> = ({
   };
 
   const clearFilters = () => {
+    setRange([null, null]);
+
     setFilters({
       dateRange: { start: null, end: null },
       areas: [],
@@ -134,6 +132,47 @@ const Filters: React.FC<FilterProps> = ({
         document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showDateModal]);
+
+  // Update timeFilter when range changes
+  useEffect(() => {
+    if (filters.timeFilter.mode === "range") {
+      if (range[0] && range[1]) {
+        setFilters((prev) => ({
+          ...prev,
+          timeFilter: {
+            mode: "range",
+            startDateTime: range[0].toISOString(),
+            endDateTime: range[1].toISOString(),
+          },
+        }));
+      } else {
+        // If range is cleared but mode is still "range", keep the mode but clear dates
+        setFilters((prev) => ({
+          ...prev,
+          timeFilter: {
+            mode: "range",
+            startDateTime: null,
+            endDateTime: null,
+          },
+        }));
+      }
+    }
+  }, [range]);
+
+  // Sync range state with filters when mode changes
+  useEffect(() => {
+    if (filters.timeFilter.mode !== "range") {
+      setRange([null, null]);
+    } else if (
+      filters.timeFilter.startDateTime &&
+      filters.timeFilter.endDateTime
+    ) {
+      setRange([
+        dayjs(filters.timeFilter.startDateTime),
+        dayjs(filters.timeFilter.endDateTime),
+      ]);
+    }
+  }, [filters.timeFilter.mode]);
 
   const isTimeFilterActive =
     filters.timeFilter.mode === "allDay" ||
@@ -222,27 +261,17 @@ const Filters: React.FC<FilterProps> = ({
             </div>
 
             {filters.timeFilter.mode === "range" && (
-              <div
-                onClick={() => setShowDateModal(true)}
-                ref={timeRangeRef}
-                className="border border-gray-300 rounded px-3 py-1 mt-2 cursor-pointer hover:bg-gray-50 transition text-sm"
-              >
-                <span
-                  className={
-                    filters.timeFilter.startDateTime &&
-                    filters.timeFilter.endDateTime
-                      ? "text-gray-700"
-                      : "text-gray-400"
-                  }
-                >
-                  {filters.timeFilter.startDateTime &&
-                  filters.timeFilter.endDateTime
-                    ? formatRangeLabel(
-                        filters.timeFilter.startDateTime,
-                        filters.timeFilter.endDateTime,
-                      )
-                    : t("filters.select_time_range")}
-                </span>
+              <div className="mt-2">
+                <RangePicker
+                  showTime={{
+                    format: "HH:mm",
+                    minuteStep: 5,
+                  }}
+                  format="YYYY-MM-DD HH:mm"
+                  value={range}
+                  onChange={(values) => setRange(values as any)}
+                  className="w-full mb-4 px-3 py-1 mt-2 cursor-pointer transition text-sm mt-1"
+                />
               </div>
             )}
           </div>
@@ -341,136 +370,28 @@ const Filters: React.FC<FilterProps> = ({
           </div>
 
           {/* Factory Filter */}
-          <div className="mb-3">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              {t("filters.factory")}
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {factories.map((factory) => (
-                <button
-                  key={factory}
-                  onClick={() => selectFactory(factory)}
-                  className={`px-3 py-1 text-sm rounded border transition-colors cursor-pointer ${
-                    filters.factories.includes(factory)
-                      ? "bg-blue-500 border-blue-500 text-white font-medium"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {factory}
-                </button>
-              ))}
+          {isShowFactoryRadio && (
+            <div className="mb-3">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                {t("filters.factory")}
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                {factories.map((factory) => (
+                  <button
+                    key={factory}
+                    onClick={() => selectFactory(factory)}
+                    className={`px-3 py-1 text-sm rounded border transition-colors cursor-pointer ${
+                      filters.factories.includes(factory)
+                        ? "bg-blue-500 border-blue-500 text-white font-medium"
+                        : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {factory}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-
-          <AnimatePresence>
-            {showDateModal && (
-              <motion.div
-                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg w-[420px] p-5">
-                    <h2 className="font-semibold mb-4">
-                      {t("filters.choose_range")}
-                    </h2>
-
-                    <input
-                      type="date"
-                      min={new Date().toISOString().split("T")[0]}
-                      value={startDate?.toISOString().split("T")[0] || ""}
-                      onChange={(e) => {
-                        const d = new Date(e.target.value);
-                        setStartDate(d);
-                        setEndDate(d);
-                      }}
-                      className="border p-2 w-full mb-2 rounded"
-                    />
-
-                    <input
-                      type="date"
-                      min={startDate?.toISOString().split("T")[0]}
-                      value={endDate?.toISOString().split("T")[0] || ""}
-                      onChange={(e) => setEndDate(new Date(e.target.value))}
-                      className="border p-2 w-full mb-3 rounded"
-                    />
-
-                    <input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="border p-2 w-full mb-2 rounded"
-                    />
-
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="border p-2 w-full mb-4 rounded"
-                    />
-
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => setShowDateModal(false)}
-                        className="bg-gray-400 text-white px-4 py-1 rounded hover:bg-gray-300"
-                      >
-                        {t("filters.cancel")}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setStartDate(null);
-                          setEndDate(null);
-                          setStartTime("");
-                          setEndTime("");
-
-                          setFilters((p) => ({
-                            ...p,
-                            timeFilter: {
-                              mode: "range",
-                              startDateTime: null,
-                              endDateTime: null,
-                            },
-                          }));
-                        }}
-                        className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-400"
-                      >
-                        {t("filters.clear")}
-                      </button>
-
-                      <button
-                        disabled={!startDate || !startTime || !endTime}
-                        onClick={() => {
-                          const startDT = new Date(
-                            `${startDate?.toISOString().split("T")[0]}T${startTime}`,
-                          );
-                          const endDT = new Date(
-                            `${endDate!.toISOString().split("T")[0]}T${endTime}`,
-                          );
-
-                          setFilters((p) => ({
-                            ...p,
-                            timeFilter: {
-                              mode: "range",
-                              startDateTime: startDT.toISOString(),
-                              endDateTime: endDT.toISOString(),
-                            },
-                          }));
-
-                          setShowDateModal(false);
-                        }}
-                        className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-40"
-                      >
-                        {t("filters.ok")}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          )}
         </aside>
       </div>
     </div>

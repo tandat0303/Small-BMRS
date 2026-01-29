@@ -91,7 +91,9 @@
       "click_to_book": "Nhấn để đặt phòng",
       "booking_details": "Chi tiết đặt lịch",
       "no_meetings_today": "Hôm nay chưa có cuộc họp",
-      "close": "Đóng"
+      "close": "Đóng",
+      "capacity": "Sức chứa",
+      "timeline": "Thời gian biểu"
     }
   },
   "booking_modal": {
@@ -121,7 +123,12 @@
     "submit": "Nhấn để đặt phòng",
     "submitting": "Đang xử lý...",
     "success": "Đặt phòng thành công!",
-    "error": "Đặt phòng thất bại",
+    "error": {
+      "booking_failed": "Đặt phòng thất bại",
+      "enter_bpm": "Vui lòng nhập số BPM",
+      "bpm_not_sign": "Phiếu BPM chưa được ký duyệt",
+      "time_not_in_range": "Thời gian họp phải trong khoảng 07:00–17:00"
+    },
     "prev_month": "Tháng trước",
     "next_month": "Tháng sau",
     "monday": "thứ hai",
@@ -156,6 +163,16 @@
     "error": {
       "load_failed": "Đã xảy ra lỗi khi tải lịch sử"
     },
-    "loading": "Đang tải..."
+    "loading": "Đang tải...",
+    "notify": {
+      "cancel_success_title": "Huỷ đặt phòng thành công",
+      "cancel_success_desc": "Lịch họp đã được huỷ.",
+      "cancel_error_title": "Huỷ thất bại",
+      "cancel_error_desc": "Có lỗi xảy ra khi huỷ lịch họp."
+    }
+  },
+  "common": {
+    "yes": "Xác nhận",
+    "no": "Hủy"
   }
 }

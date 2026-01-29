@@ -8,7 +8,7 @@ import {
   Users,
   Eye,
 } from "lucide-react";
-import { Image } from "antd";
+import { Image, Popconfirm, notification } from "antd";
 import type { Schedule } from "../types";
 import { scheduleAPI } from "../services/schedules.api";
 import storage from "@/lib/storage";
@@ -28,7 +28,20 @@ const BookingHistory: React.FC = () => {
   const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
 
   useEffect(() => {
+    let isMounted = true;
+
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        setLoading(false);
+      }
+    }, 3000);
+
     fetchSchedule();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   const fetchSchedule = async () => {
@@ -39,26 +52,37 @@ const BookingHistory: React.FC = () => {
       const user = JSON.parse(storage.get("user"));
       const userId = user.userId;
       const data = await scheduleAPI.getMySchedule(user.factory, userId);
+
       setMeetings(data);
-    } catch (err) {
-      setError(t("booking_history.error.load_failed"));
-      console.error("Error fetching schedule:", err);
+    } catch (err: any) {
+      if (err.code === "ECONNABORTED") {
+        setMeetings([]);
+      } else {
+        setError(t("booking_history.error.load_failed"));
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = async (scheduleId: number) => {
-    if (!window.confirm(t("booking_history.cancel_confirm"))) {
-      return;
-    }
-
     try {
       await scheduleAPI.cancelSchedule(scheduleId);
-      // Refresh the list
+
+      notification.success({
+        message: t("booking_history.notify.cancel_success_title"),
+        description: t("booking_history.notify.cancel_success_desc"),
+        placement: "topRight",
+      });
+
       fetchSchedule();
     } catch (err) {
-      alert(t("booking_history.cancel_error"));
+      notification.error({
+        message: t("booking_history.notify.cancel_error_title"),
+        description: t("booking_history.notify.cancel_error_desc"),
+        placement: "topRight",
+      });
+
       console.error("Error canceling schedule:", err);
     }
   };
@@ -167,7 +191,7 @@ const BookingHistory: React.FC = () => {
                 className="relative flex flex-col sm:flex-row bg-white rounded-lg border border-gray-200 p-4 sm:p-5 hover:shadow-md transition-shadow gap-4"
               >
                 <div className="flex-shrink-0">
-                  <div className="relative w-full sm:w-[200px] h-[140px]">
+                  <div className="relative w-full sm:w-[200px] h-[140px] group">
                     <div className="w-full h-full bg-gray-100 rounded-lg overflow-hidden">
                       <Image
                         src={imageURL}
@@ -181,6 +205,11 @@ const BookingHistory: React.FC = () => {
                         }}
                         fallback="/api/placeholder/400/300"
                       />
+                    </div>
+
+                    <div className="absolute text-white inset-0 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                      <Eye className="w-4 h-4 mr-1" />
+                      <span className="font-medium text-sm">Preview</span>
                     </div>
 
                     {/* Capacity badge */}
@@ -245,13 +274,20 @@ const BookingHistory: React.FC = () => {
 
                     {/* Cancel Button - absolute on desktop */}
                     {upcoming && !meeting.Cancel && (
-                      <button
-                        onClick={() => handleCancel(meeting.ID_Schedule)}
-                        className="sm:absolute sm:top-3 sm:right-3 p-2 h-fit text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0 mt-3 sm:mt-0"
-                        title={t("booking_history.cancel_booking")}
+                      <Popconfirm
+                        title={t("booking_history.cancel_confirm")}
+                        onConfirm={() => handleCancel(meeting.ID_Schedule)}
+                        okText={t("common.yes")}
+                        cancelText={t("common.no")}
+                        placement="leftTop"
                       >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                        <button
+                          className="sm:absolute sm:top-3 sm:right-3 p-2 h-fit text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0 mt-3 sm:mt-0"
+                          title={t("booking_history.cancel_booking")}
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </Popconfirm>
                     )}
                   </div>
                   <div className="absolute bottom-3 right-3">

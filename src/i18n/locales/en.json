@@ -91,7 +91,9 @@
       "click_to_book": "Click to book",
       "booking_details": "Booking Details",
       "no_meetings_today": "No meetings scheduled for today",
-      "close": "Close"
+      "close": "Close",
+      "capacity": "Capacity",
+      "timeline": "Timeline"
     }
   },
   "booking_modal": {
@@ -124,7 +126,12 @@
     "submit": "Click to book",
     "submitting": "Processing...",
     "success": "Booking successful!",
-    "error": "Booking failed",
+    "error": {
+      "booking_failed": "Booking failed",
+      "enter_bpm": "Please enter BPM number",
+      "bpm_not_sign": "The BPM form has not been signed",
+      "time_not_in_range": "Meeting time should be between 7:00 and 5:00 PM"
+    },
     "prev_month": "Previous month",
     "next_month": "Next month",
     "monday": "Monday",
@@ -159,6 +166,16 @@
     "error": {
       "load_failed": "An error occurred while loading history"
     },
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "notify": {
+      "cancel_success_title": "Cancelled successfully",
+      "cancel_success_desc": "The meeting has been cancelled",
+      "cancel_error_title": "Cancel failed",
+      "cancel_error_desc": "An error occurred while canceling the meeting"
+    }
+  },
+  "common": {
+    "yes": "Confirm",
+    "no": "Cancel"
   }
 }

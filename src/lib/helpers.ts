@@ -122,3 +122,8 @@ export const formatRangeLabel = (startISO: string, endISO: string) => {
 
   return `${start.getDate()}/${start.getMonth() + 1}/${start.getFullYear()} - ${end.getDate()}/${end.getMonth() + 1}/${end.getFullYear()}, ${timeStr}`;
 };
+
+export const parseLocalTime = (isoString: string) => {
+  const clean = isoString.replace("Z", "").split("+")[0].split(".")[0];
+  return new Date(clean);
+};
