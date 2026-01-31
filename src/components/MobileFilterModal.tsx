@@ -15,6 +15,10 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const user = JSON.parse(storage.get("user"));
+
+  const isShowFactoryRadio = ["5", "7", 5, 7].includes(user?.level);
+
   const [showDateModal, setShowDateModal] = useState(false);
   const [userDefaultFactory, setUserDefaultFactory] = useState<string>("");
 
@@ -36,13 +40,31 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
   }, [rooms]);
 
   useEffect(() => {
-    const user = JSON.parse(storage.get("user"));
-    if (user?.factory) {
-      setUserDefaultFactory(user.factory);
+    const userFactory = user?.factory;
+
+    if (userFactory) {
+      setUserDefaultFactory(userFactory);
+
+      if (filters.factories.length === 0) {
+        setFilters((prev) => ({
+          ...prev,
+          factories: [userFactory],
+        }));
+
+        if (onFactoryChange) {
+          onFactoryChange([userFactory]);
+        }
+      }
     }
   }, []);
 
-  // Sync local date/time state with filters when opening modal
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      areas: [],
+    }));
+  }, [areas]);
+
   useEffect(() => {
     if (showDateModal && filters.timeFilter.mode === "range") {
       if (filters.timeFilter.startDateTime && filters.timeFilter.endDateTime) {
@@ -94,7 +116,6 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
   };
 
   const clearFilters = () => {
-    // Clear local date/time state
     setStartDate(null);
     setEndDate(null);
     setStartTime("");
@@ -227,13 +248,15 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
                   filters.timeFilter.endDateTime,
                 )
               ) : (
-                <span className="ml-1">{t("filters.select_time_range")}</span>
+                <span className="text-gray-400">
+                  {t("filters.choose_range")}
+                </span>
               )}
             </div>
           )}
         </div>
 
-        {/* Area Filter - Dynamic */}
+        {/* Area Filter */}
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">
             {t("filters.area")}{" "}
@@ -326,26 +349,28 @@ const MobileFilterModal: React.FC<MobileFilterProps> = ({
         </div>
 
         {/* Factory Filter */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">
-            {t("filters.factory")}
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            {factories.map((factory) => (
-              <button
-                key={factory}
-                onClick={() => selectFactory(factory)}
-                className={`px-3 py-2 text-sm rounded border transition-colors ${
-                  filters.factories?.includes(factory)
-                    ? "bg-blue-500 border-blue-500 text-white font-medium"
-                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                {factory}
-              </button>
-            ))}
+        {isShowFactoryRadio && (
+          <div>
+            <h3 className="text-sm font-medium text-gray-900 mb-3">
+              {t("filters.factory")}
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {factories.map((factory) => (
+                <button
+                  key={factory}
+                  onClick={() => selectFactory(factory)}
+                  className={`px-3 py-2 text-sm rounded border transition-colors ${
+                    filters.factories?.includes(factory)
+                      ? "bg-blue-500 border-blue-500 text-white font-medium"
+                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {factory}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Apply Button */}
         <div className="pt-4">

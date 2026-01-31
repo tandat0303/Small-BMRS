@@ -1,6 +1,10 @@
 import dayjs from "dayjs";
 import axiosConfig from "./axios";
-import type { Schedule } from "@/types";
+import type {
+  Schedule,
+  UpdateSchedulePayload,
+  UpdateScheduleResponse,
+} from "@/types";
 
 export const scheduleAPI = {
   getAllSchedulesOfRoom: async (
@@ -100,6 +104,25 @@ export const scheduleAPI = {
       const response = await axiosConfig.put(
         `/bookmeeting/cancelmeeting/${scheduleId}`,
       );
+      return response.data;
+    } catch (error) {
+      console.error("Error canceling schedule:", error);
+      throw error;
+    }
+  },
+
+  updateSchedule: async (
+    scheduleId: number,
+    payload: UpdateSchedulePayload,
+  ): Promise<UpdateScheduleResponse> => {
+    try {
+      const response = await axiosConfig.post(
+        `/bookmeeting/editschedule/${scheduleId}`,
+        {
+          meeting: payload,
+        },
+      );
+
       return response.data;
     } catch (error) {
       console.error("Error canceling schedule:", error);

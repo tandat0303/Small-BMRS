@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
@@ -9,9 +9,9 @@ import {
   Warehouse,
   Eye,
 } from "lucide-react";
-import { Image } from "antd";
+import { Image, Popover } from "antd";
 import type { Room } from "@/types";
-import BookingModal from "../components/BookingModal";
+import BookingModal from "./BookingModal";
 import { scheduleAPI } from "@/services/schedules.api.ts";
 import { formatDateTimeRange, parseLocalTime } from "@/lib/helpers";
 import Swal from "sweetalert2";
@@ -33,10 +33,12 @@ interface RoomCardProps {
 const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
   const { t } = useTranslation();
 
+  const START_HOUR = 7;
+  const PIXELS_PER_HOUR = 40;
+  const TIMELINE_TOP_PADDING = 28;
+
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showNotePopover, setShowNotePopover] = useState(false);
-  const popoverRef = useRef<HTMLDivElement>(null);
 
   const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
   const imageUrl = `${IMAGE_URL}/assets/${room.imageRoom}`;
@@ -46,6 +48,16 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
 
   const [modalBookings, setModalBookings] = useState<any[]>([]);
+
+  const [previewVisible, setPreviewVisible] = useState(false);
+
+  // useEffect(() => {
+  //   if (!room.imageRoom) return;
+
+  //   const img = new window.Image();
+  //   img.src = imageUrl;
+  //   img.decode?.();
+  // }, [imageUrl]);
 
   useEffect(() => {
     if (showDetailsModal) {
@@ -105,31 +117,26 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
     }
   }, [room.ID_Room, selectedDate, showDetailsModal, t]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(event.target as Node)
-      ) {
-        setShowNotePopover(false);
-      }
-    };
-
-    if (showNotePopover) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showNotePopover]);
-
   return (
     <>
-      <div className="bg-white border border-gray-300 rounded-lg hover:shadow-md transition flex flex-col h-full">
+      <div
+        className="bg-white border 
+          border-gray-300 
+          rounded-lg 
+          transition-all 
+          duration-200 
+          ease-out 
+          flex flex-col 
+          h-full hover:shadow-2xl 
+          hover:-translate-y-[2px] 
+          hover:scale-[1.01]
+        "
+      >
         {/* Room Image */}
         <div className="p-3">
           <div className="relative h-40 bg-gray-100 rounded-sm overflow-hidden group">
             <Image
-              src={imageUrl}
+              src={imageUrl || "/placeholder.svg"}
               alt={room.Name}
               width="100%"
               height="100%"
@@ -139,11 +146,20 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                 display: "block",
               }}
               fallback="/api/placeholder/400/300"
+              preview={{
+                open: previewVisible,
+                onOpenChange: (v) => setPreviewVisible(v),
+              }}
+              onClick={() => {
+                requestAnimationFrame(() => setPreviewVisible(true));
+              }}
             />
 
             <div className="absolute text-white inset-0 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
               <Eye className="w-4 h-4 mr-1" />
-              <span className="font-medium text-sm">Preview</span>
+              <span className="font-medium text-sm">
+                {t("room_card.preview")}
+              </span>
             </div>
 
             <div className="absolute bottom-2 right-2 flex items-center rounded-full px-2.5 py-1 text-xs bg-white/50 backdrop-opacity-75 border border-white/40 shadow-sm">
@@ -172,27 +188,26 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
               </h3>
 
               {room.note && (
-                <div className="relative flex-shrink-0">
-                  <button
-                    onClick={() => setShowNotePopover(!showNotePopover)}
-                    className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 transition cursor-pointer"
-                  >
-                    <AlertTriangle className="w-3 h-3" />
-                    <span className="font-medium">{t("room_card.note")}</span>
-                  </button>
-
-                  {showNotePopover && (
-                    <div
-                      ref={popoverRef}
-                      className="absolute z-[9999] left-full ml-1 top-1/2 -translate-y-1/2 bg-orange-50 border-2 border-orange-200 rounded-lg p-3 shadow-xl w-64"
-                      style={{ boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)" }}
-                    >
-                      <p className="text-xs text-gray-700 whitespace-pre-wrap">
-                        {room.note}
-                      </p>
+                <Popover
+                  content={
+                    <div className="max-w-xs text-xs text-gray-700 whitespace-pre-wrap">
+                      {room.note}
                     </div>
-                  )}
-                </div>
+                  }
+                  title={
+                    <div className="flex items-center gap-2 text-orange-600">
+                      <span className="font-semibold">
+                        {t("room_card.note")}
+                      </span>
+                    </div>
+                  }
+                  trigger={["hover"]}
+                  placement="right"
+                >
+                  <button className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 transition cursor-pointer">
+                    <AlertTriangle className="w-4 h-4" />
+                  </button>
+                </Popover>
               )}
             </div>
 
@@ -282,29 +297,26 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
       </div>
 
       {/* Booking Modal */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showBookingModal && (
           <motion.div
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-70 flex items-center justify-center p-4"
             onClick={() => setShowBookingModal(false)}
           >
             <motion.div
-              className="w-full max-w-2xl will-change-transform"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-t-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
-              initial={{ y: 40, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 40, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 22 }}
             >
-              <div className="bg-white rounded-xl shadow-2xl relative z-10">
-                <BookingModal
-                  room={room}
-                  onClose={() => setShowBookingModal(false)}
-                />
-              </div>
+              <BookingModal
+                room={room}
+                onClose={() => setShowBookingModal(false)}
+              />
             </motion.div>
           </motion.div>
         )}
@@ -330,7 +342,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
               <div className="flex h-full max-h-[100vh]">
                 {/* Left side - Timeline */}
                 <div className="flex-1 bg-gray-50 overflow-y-auto border-r border-gray-200">
-                  <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-teal-600 text-white p-6 shadow-md z-10">
+                  <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-teal-600 text-white p-3 shadow-md z-10">
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-2xl font-bold mb-1">{room.Name}</h2>
@@ -371,7 +383,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-6 bg-teal-600 rounded-full"></div>
-                        <h3 className="font-bold text-base text-gray-800">
+                        <h3 className="font-bold text-2xl text-gray-800">
                           {t("room_card.modal.timeline")}
                         </h3>
                       </div>
@@ -398,22 +410,19 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                     </div>
 
                     {/* Time slots */}
-                    <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden pt-7">
                       {Array.from({ length: 11 }, (_, i) => i + 7).map(
                         (hour) => {
                           const timeStr = `${hour.toString().padStart(2, "0")}:00`;
 
                           return (
-                            <div
-                              key={hour}
-                              className="flex items-center h-10 relative"
-                            >
-                              <div className="w-16 text-gray-600 text-xs font-medium text-right pr-3 flex-shrink-0">
+                            <div key={hour} className="relative h-10">
+                              {/* Horizontal grid line */}
+                              <div className="absolute top-0 left-16 right-0 border-t border-gray-200"></div>
+
+                              {/* Time label */}
+                              <div className="absolute -top-2 w-16 text-right pr-3 text-xs text-gray-600 font-medium">
                                 {timeStr}
-                              </div>
-                              <div className="flex-1 h-full relative border-l-2 border-gray-300">
-                                {/* Horizontal grid line */}
-                                <div className="absolute top-0 left-0 right-0 border-t border-gray-200"></div>
                               </div>
                             </div>
                           );
@@ -422,7 +431,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
 
                       {/* Render bookings as absolute positioned elements */}
                       {modalBookings.map((booking) => {
-                        // Parse as local time by removing timezone
                         const start = parseLocalTime(booking.Time_Start);
                         const end = parseLocalTime(booking.Time_End);
 
@@ -431,26 +439,38 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                         const endHour = end.getHours();
                         const endMin = end.getMinutes();
 
-                        // Calculate position from 07:00 (40px per hour instead of 48px)
+                        const startTotalMinutes = startHour * 60 + startMin;
+                        const endTotalMinutes = endHour * 60 + endMin;
+                        const timelineStartMinutes = START_HOUR * 60;
+
                         const topPosition =
-                          (((startHour - 7) * 60 + startMin) / 60) * 40;
+                          TIMELINE_TOP_PADDING +
+                          ((startTotalMinutes - timelineStartMinutes) / 60) *
+                            PIXELS_PER_HOUR;
+
                         const duration =
-                          ((endHour * 60 +
-                            endMin -
-                            (startHour * 60 + startMin)) /
-                            60) *
-                          40;
+                          ((endTotalMinutes - startTotalMinutes) / 60) *
+                          PIXELS_PER_HOUR;
 
                         return (
                           <div
                             key={booking.ID_Schedule}
-                            className="absolute bg-gradient-to-br from-teal-50 to-teal-100 border-2 border-teal-400 border-l-4 border-l-teal-600 p-2 rounded-lg shadow-md hover:shadow-lg transition"
+                            className="
+                              absolute bg-gradient-to-br from-teal-50/50 to-teal-100/50
+                              border-2 border-teal-400 border-l-4 border-l-teal-600
+                              p-2 rounded-lg shadow-sm
+                              transition-all duration-200 ease-out
+                              hover:shadow-xl hover:-translate-y-[2px] hover:scale-[1.01]
+                              active:scale-[0.98]
+                              cursor-pointer
+                            "
                             style={{
                               left: "70px",
                               right: "8px",
                               top: `${topPosition}px`,
                               height: `${Math.max(duration, 32)}px`,
                               zIndex: 10,
+                              animation: "fadeSlideIn 0.25s ease-out",
                             }}
                           >
                             <div className="flex items-start justify-between gap-2">

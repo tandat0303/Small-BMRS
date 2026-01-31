@@ -22,7 +22,8 @@
       "title": "Đăng nhập thất bại",
       "text": "Sai tài khoản/mật khẩu hoặc nhà máy",
       "confirm_btn_txt": "Đóng"
-    }
+    },
+    "success": "Đăng nhập thành công!"
   },
   "header": {
     "vietnamese": "Tiếng Việt",
@@ -70,7 +71,7 @@
     "no_note_found": "Không tìm thấy phòng họp phù hợp"
   },
   "room_card": {
-    "preview": "Preview",
+    "preview": "Xem",
     "capacity": "Sức chứa",
     "people": "người",
     "area": "Khu vực",
@@ -84,7 +85,8 @@
       "title": "Lỗi",
       "fetch_failed": "Lấy danh sách đặt phòng thất bại!",
       "get_info_failed": "Không thể tải phòng ban của người dùng!",
-      "confirm_btn": "Đóng"
+      "confirm_btn": "Đóng",
+      "substitute_not_found": "Không tìm thấy người thay thế"
     },
     "modal": {
       "room_details": "Chi tiết phòng họp",
@@ -101,6 +103,8 @@
     "minutes": "Phút",
     "title": "Đặt lịch",
     "room_name": "Tên phòng",
+    "cardNumber": "Số thẻ",
+    "Name": "Tên",
     "meeting_info": "Thông tin cuộc họp",
     "meeting_name_placeholder": "Chủ đề cuộc họp",
     "meeting_purpose": "Mục đích cuộc họp",
@@ -115,16 +119,20 @@
     "select_datetime": "Chọn ngày & giờ",
     "select_days": "Chỉ áp dụng các thứ được chọn",
     "select_days_placeholder": "Chọn thứ áp dụng",
+    "idbpm": "Số BPM",
+    "enter_bpm": "Vui lòng nhập số BPM",
+    "required": "Bắt buộc",
     "start": "Bắt đầu",
     "end": "Kết thúc",
     "clear": "Clear",
-    "cancel": "Cancel",
+    "cancel": "Hủy",
     "ok": "OK",
     "submit": "Nhấn để đặt phòng",
     "submitting": "Đang xử lý...",
     "success": "Đặt phòng thành công!",
     "error": {
-      "booking_failed": "Đặt phòng thất bại",
+      "title": "Lỗi đặt phòng",
+      "booking_failed": "Đã có lịch họp vào khung giờ này!",
       "enter_bpm": "Vui lòng nhập số BPM",
       "bpm_not_sign": "Phiếu BPM chưa được ký duyệt",
       "time_not_in_range": "Thời gian họp phải trong khoảng 07:00–17:00"
@@ -149,27 +157,49 @@
       "cancelled_short": "Đã hủy"
     },
     "no_meetings": "Không có lịch họp nào",
-    "preview": "Preview",
+    "preview": "Xem",
     "department": "Phòng ban",
     "host": "Người chủ trì",
     "cancel_booking": "Hủy đặt phòng",
-    "cancel_confirm": "Bạn có chắc chắn muốn hủy đặt phòng này?",
-    "cancel_error": "Không thể hủy đặt phòng. Vui lòng thử lại.",
+    "edit_booking": "Sửa lịch họp",
     "status": {
       "cancelled": "Đã hủy",
       "upcoming": "Sắp diễn ra",
-      "completed": "Đã kết thúc"
+      "completed": "Đã kết thúc",
+      "ongoing": "Đang diễn ra"
     },
     "error": {
-      "load_failed": "Đã xảy ra lỗi khi tải lịch sử"
+      "load_failed": "Đã xảy ra lỗi khi tải lịch sử",
+      "title": "Lỗi",
+      "edit_failed": "Đã có lịch họp trong khung giờ này!"
     },
     "loading": "Đang tải...",
     "notify": {
+      "cancel_confirm": "Xác nhận hủy lịch họp",
+      "cancel_warning": "Bạn có chắc muốn hủy lịch họp này ?",
       "cancel_success_title": "Huỷ đặt phòng thành công",
       "cancel_success_desc": "Lịch họp đã được huỷ.",
       "cancel_error_title": "Huỷ thất bại",
-      "cancel_error_desc": "Có lỗi xảy ra khi huỷ lịch họp."
-    }
+      "cancel_error_desc": "Có lỗi xảy ra khi huỷ lịch họp.",
+      "edit_success": "Cập nhật lịch họp thành công"
+    },
+    "edit": {
+      "title": "Sửa lịch họp",
+      "cardNumber": "Số thẻ",
+      "enter_id": "Nhập số thẻ",
+      "name_dept": "Tên - Phòng ban",
+      "topic": "Chủ đề",
+      "meeting_name_placeholder": "Chủ đề cuộc họp",
+      "purpose": "Mục đích",
+      "meeting_purpose_placeholder": "Mục đích cuộc họp",
+      "time": "Thời gian",
+      "start": "Bắt đầu",
+      "end": "Kết thúc",
+      "cancel": "Hủy",
+      "saving": "Đang lưu...",
+      "save": "Lưu"
+    },
+    "required": "Bắt buộc"
   },
   "common": {
     "yes": "Xác nhận",

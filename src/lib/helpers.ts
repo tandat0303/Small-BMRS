@@ -1,39 +1,17 @@
-export const timeToMinutes = (time: string) => {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-};
-
-export const getDaysInMonth = (date: Date) => {
-  const y = date.getFullYear();
-  const m = date.getMonth();
-  return {
-    days: new Date(y, m + 1, 0).getDate(),
-    start: new Date(y, m, 1).getDay(),
-  };
-};
-
-export const formatTimeRange = (start: string, end: string) => {
-  const s = new Date(start);
-  const e = new Date(end);
-
-  const pad = (n: number) => n.toString().padStart(2, "0");
-
-  return `${pad(s.getHours())}:${pad(s.getMinutes())} – ${pad(
-    e.getHours(),
-  )}:${pad(e.getMinutes())}`;
-};
-
-export const getMeetingStatus = (start: string, end: string) => {
+export const getMeetingStatus = (
+  startTime: string,
+  endTime: string,
+): "upcoming" | "ongoing" | "completed" => {
+  const start = new Date(startTime.replace("Z", ""));
+  const end = new Date(endTime.replace("Z", ""));
   const now = new Date();
-  const s = new Date(start);
-  const e = new Date(end);
 
-  if (now >= s && now <= e) return "ongoing";
-  if (now < s) return "upcoming";
-  return "ended";
+  if (now < start) return "upcoming";
+  if (now >= start && now < end) return "ongoing";
+  return "completed";
 };
 
-export const formatDate = (iso: string) => {
+const formatDate = (iso: string) => {
   const d = new Date(iso);
 
   const year = d.getFullYear();
@@ -56,24 +34,6 @@ export const formatDateTimeRange = (start: string, end: string) => {
   return `${formatDate(start)} · ${formatTime(start)} - ${formatTime(end)}`;
 };
 
-export function setTimeToday(hour: number | undefined, minute = 0) {
-  const now = new Date();
-  return new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    hour,
-    minute,
-  ).toISOString();
-}
-
-export const formatLocalDate = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
-
 export const isOverlapping = (
   aStart: Date,
   aEnd: Date,
@@ -94,7 +54,7 @@ export const formatDateTime = (dateTimeStr: string) => {
 
   return {
     date: `${day}/${month}/${year}`,
-    time: `${hour}:${minute}`,
+    time: `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`,
   };
 };
 

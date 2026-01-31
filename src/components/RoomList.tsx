@@ -57,7 +57,7 @@ const RoomList: React.FC<RoomListProps> = ({
     fetchSchedules();
 
     if (filters.timeFilter?.mode !== "range") {
-      const interval = setInterval(fetchSchedules, 300000);
+      const interval = setInterval(fetchSchedules, 600000);
       return () => clearInterval(interval);
     }
   }, [

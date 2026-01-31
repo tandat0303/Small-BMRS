@@ -4,6 +4,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 
 import vi from "./locales/vi.json";
 import en from "./locales/en.json";
+import tw from "./locales/tw.json";
 
 const savedLanguage = localStorage.getItem("i18nextLng") || "vi";
 
@@ -14,6 +15,7 @@ i18n
     resources: {
       en: { translation: en },
       vi: { translation: vi },
+      tw: { translation: tw },
     },
     lng: savedLanguage,
     fallbackLng: "vi",

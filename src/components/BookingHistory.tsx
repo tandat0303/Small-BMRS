@@ -7,13 +7,19 @@ import {
   List,
   Users,
   Eye,
+  Edit,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
 } from "lucide-react";
-import { Image, Popconfirm, notification } from "antd";
+import { Image, Modal, notification } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import type { Schedule } from "../types";
 import { scheduleAPI } from "../services/schedules.api";
 import storage from "@/lib/storage";
-import { formatDateTime, isUpcoming } from "@/lib/helpers";
+import { formatDateTime, getMeetingStatus, isUpcoming } from "@/lib/helpers";
 import { useTranslation } from "react-i18next";
+import EditBookingModal from "./EditBookingModal";
+import dayjs from "dayjs";
 
 const BookingHistory: React.FC = () => {
   const { t } = useTranslation();
@@ -24,6 +30,12 @@ const BookingHistory: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<
     "upcoming" | "completed" | "cancelled"
   >("upcoming");
+  const [editingMeeting, setEditingMeeting] = useState<Schedule | null>(null);
+  const [sortOrders, setSortOrders] = useState({
+    upcoming: "desc",
+    completed: "desc",
+    cancelled: "desc",
+  });
 
   const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
 
@@ -82,20 +94,64 @@ const BookingHistory: React.FC = () => {
         description: t("booking_history.notify.cancel_error_desc"),
         placement: "topRight",
       });
-
-      console.error("Error canceling schedule:", err);
     }
   };
 
-  const filteredMeetings = meetings.filter((meeting) => {
-    const upcoming = isUpcoming(meeting.Time_Start);
+  const confirmCancel = (meeting: Schedule) => {
+    const startObj = formatDateTime(meeting.Time_Start);
+    const endObj = formatDateTime(meeting.Time_End);
 
-    if (activeFilter === "upcoming") return upcoming && !meeting.Cancel;
-    if (activeFilter === "completed") return !upcoming && !meeting.Cancel;
-    if (activeFilter === "cancelled") return meeting.Cancel;
+    const startStr = startObj.time;
+    const endStr = endObj.time;
 
-    return true;
-  });
+    Modal.confirm({
+      title: `${meeting.Name} | ${meeting.Area}`,
+      content: `${t("booking_history.notify.cancel_confirm")} "${meeting.Topic}" - ${startStr} - ${endStr} ?`,
+      okText: t("common.yes"),
+      cancelText: t("common.no"),
+      okType: "danger",
+      centered: true,
+      icon: <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />,
+      onOk: () => handleCancel(meeting.ID_Schedule),
+    });
+  };
+
+  const filteredMeetings = meetings
+    .filter((meeting) => {
+      const status = getMeetingStatus(meeting.Time_Start, meeting.Time_End);
+
+      if (activeFilter === "upcoming")
+        return (
+          (status === "upcoming" || status === "ongoing") &&
+          meeting.Cancel !== "1"
+        );
+      if (activeFilter === "completed")
+        return status === "completed" && meeting.Cancel !== "1";
+      if (activeFilter === "cancelled") return meeting.Cancel === "1";
+
+      return true;
+    })
+    .sort((a, b) => {
+      const statusA = getMeetingStatus(a.Time_Start, a.Time_End);
+      const statusB = getMeetingStatus(b.Time_Start, b.Time_End);
+
+      if (activeFilter === "upcoming") {
+        if (statusA === "ongoing" && statusB !== "ongoing") return -1;
+        if (statusB === "ongoing" && statusA !== "ongoing") return 1;
+      }
+
+      const timeA = new Date(a.Time_Start).getTime();
+      const timeB = new Date(b.Time_Start).getTime();
+
+      return sortOrders[activeFilter] === "asc" ? timeA - timeB : timeB - timeA;
+    });
+
+  const toggleSort = () => {
+    setSortOrders((prev) => ({
+      ...prev,
+      [activeFilter]: prev[activeFilter] === "desc" ? "asc" : "desc",
+    }));
+  };
 
   if (loading) {
     return (
@@ -116,8 +172,8 @@ const BookingHistory: React.FC = () => {
   return (
     <div>
       {/* Filter Tabs */}
-      <div className="mb-6 sm:mb-8 border-b border-gray-200 overflow-x-auto">
-        <div className="flex justify-center gap-2 sm:gap-6 min-w-min sm:min-w-0">
+      <div className="relative mb-6 sm:mb-8 border-b border-gray-200">
+        <div className="flex justify-center gap-2 sm:gap-6">
           <button
             onClick={() => setActiveFilter("upcoming")}
             className={`pb-3 px-2 sm:px-0 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors flex items-center gap-1 sm:gap-2 ${
@@ -167,6 +223,17 @@ const BookingHistory: React.FC = () => {
             </span>
           </button>
         </div>
+
+        <button
+          onClick={toggleSort}
+          className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-xs sm:text-sm px-2 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition"
+        >
+          {sortOrders[activeFilter] === "asc" ? (
+            <ArrowUpNarrowWide className="w-4.5 h-4.5" />
+          ) : (
+            <ArrowDownWideNarrow className="w-4.5 h-4.5" />
+          )}
+        </button>
       </div>
 
       {/* Meeting List */}
@@ -180,6 +247,20 @@ const BookingHistory: React.FC = () => {
       ) : (
         <div className="space-y-3 sm:space-y-4">
           {filteredMeetings.map((meeting) => {
+            const status = getMeetingStatus(
+              meeting.Time_Start,
+              meeting.Time_End,
+            );
+
+            const colorClass =
+              meeting.Cancel === "1"
+                ? "text-gray-900 opacity-60 select-none cursor-no-drop"
+                : status === "ongoing"
+                  ? "text-red-600"
+                  : status === "upcoming"
+                    ? "text-green-600"
+                    : "text-gray-900";
+
             const startDateTime = formatDateTime(meeting.Time_Start);
             const endDateTime = formatDateTime(meeting.Time_End);
             const upcoming = isUpcoming(meeting.Time_Start);
@@ -188,7 +269,8 @@ const BookingHistory: React.FC = () => {
             return (
               <div
                 key={meeting.ID_Schedule}
-                className="relative flex flex-col sm:flex-row bg-white rounded-lg border border-gray-200 p-4 sm:p-5 hover:shadow-md transition-shadow gap-4"
+                className={`relative flex flex-col sm:flex-row bg-white rounded-lg border border-gray-200 p-4 sm:p-5 transition-shadow hover:shadow-lg hover:-translate-y-[2px] hover:scale-[1.01]
+                             gap-4 ${colorClass}`}
               >
                 <div className="flex-shrink-0">
                   <div className="relative w-full sm:w-[200px] h-[140px] group">
@@ -209,7 +291,9 @@ const BookingHistory: React.FC = () => {
 
                     <div className="absolute text-white inset-0 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
                       <Eye className="w-4 h-4 mr-1" />
-                      <span className="font-medium text-sm">Preview</span>
+                      <span className="font-medium text-sm">
+                        {t("booking_history.preview")}
+                      </span>
                     </div>
 
                     {/* Capacity badge */}
@@ -226,12 +310,12 @@ const BookingHistory: React.FC = () => {
                 <div className="flex gap-3 flex-1 min-w-0">
                   <div className="flex-1 min-w-0">
                     {/* Meeting Title */}
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 truncate">
+                    <h3 className="text-base sm:text-lg font-bold mb-2 truncate">
                       {meeting.Topic}
                     </h3>
 
                     {/* Room Info */}
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm mb-2">
                       <div className="flex items-center gap-1">
                         <MapPin className="w-4 h-4 flex-shrink-0" />
                         <span className="font-medium">{meeting.Name}</span>
@@ -241,7 +325,7 @@ const BookingHistory: React.FC = () => {
                     </div>
 
                     {/* Date and Time */}
-                    <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-gray-600 mb-3">
+                    <div className="flex flex-wrap gap-4 text-xs sm:text-sm mb-3">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4 flex-shrink-0" />
                         <span>{startDateTime.date}</span>
@@ -255,7 +339,7 @@ const BookingHistory: React.FC = () => {
                     </div>
 
                     {/* Meeting Details */}
-                    <div className="text-xs sm:text-sm text-gray-600 space-y-1">
+                    <div className="text-xs sm:text-sm space-y-1">
                       <div>
                         <span className="font-medium">
                           {t("booking_history.department")}:
@@ -272,35 +356,44 @@ const BookingHistory: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Cancel Button - absolute on desktop */}
+                    {/* Edit & Cancel Buttons - absolute on desktop */}
                     {upcoming && !meeting.Cancel && (
-                      <Popconfirm
-                        title={t("booking_history.cancel_confirm")}
-                        onConfirm={() => handleCancel(meeting.ID_Schedule)}
-                        okText={t("common.yes")}
-                        cancelText={t("common.no")}
-                        placement="leftTop"
-                      >
+                      <div className="flex gap-2 mt-3 sm:mt-0 sm:absolute sm:top-3 sm:right-3">
+                        {/* Edit Button */}
                         <button
-                          className="sm:absolute sm:top-3 sm:right-3 p-2 h-fit text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0 mt-3 sm:mt-0"
+                          onClick={() => setEditingMeeting(meeting)}
+                          className="p-2 h-fit text-blue-600 hover:bg-blue-50 rounded-lg transition flex-shrink-0"
+                          title={t("booking_history.edit_booking")}
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+
+                        {/* Cancel Button */}
+                        <button
+                          onClick={() => confirmCancel(meeting)}
+                          className="p-2 h-fit text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0"
                           title={t("booking_history.cancel_booking")}
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
-                      </Popconfirm>
+                      </div>
                     )}
                   </div>
                   <div className="absolute bottom-3 right-3">
                     {meeting.Cancel ? (
-                      <span className="inline-block px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                      <span className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded-full">
                         {t("booking_history.status.cancelled")}
                       </span>
-                    ) : upcoming ? (
-                      <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                    ) : status === "ongoing" ? (
+                      <span className="px-3 py-1 bg-red-100 text-red-700 text-xs rounded-full">
+                        {t("booking_history.status.ongoing")}
+                      </span>
+                    ) : status === "upcoming" ? (
+                      <span className="px-3 py-1 bg-green-100 text-green-500 text-xs rounded-full">
                         {t("booking_history.status.upcoming")}
                       </span>
                     ) : (
-                      <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                      <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
                         {t("booking_history.status.completed")}
                       </span>
                     )}
@@ -310,6 +403,18 @@ const BookingHistory: React.FC = () => {
             );
           })}
         </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingMeeting && (
+        <EditBookingModal
+          meeting={editingMeeting}
+          onClose={() => setEditingMeeting(null)}
+          onSuccess={() => {
+            fetchSchedule();
+            setEditingMeeting(null);
+          }}
+        />
       )}
     </div>
   );

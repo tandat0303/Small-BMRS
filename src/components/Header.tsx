@@ -3,13 +3,7 @@ import logo from "../assets/logo-LY-sm.png";
 import vi from "../assets/vi.jpg";
 import en from "../assets/en.jpg";
 import tw from "../assets/tw.jpg";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Select } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import storage from "@/lib/storage";
@@ -20,6 +14,7 @@ import { useTranslation } from "react-i18next";
 const Header = () => {
   const { t } = useTranslation();
 
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -38,8 +33,13 @@ const Header = () => {
   }, []);
 
   const handleLogout = () => {
-    storage.clear();
-    navigate("/login", { replace: true });
+    setOpenUserMenu(false);
+    setIsLoggingOut(true);
+
+    setTimeout(() => {
+      storage.clear();
+      navigate("/login", { replace: true });
+    }, 600);
   };
 
   return (
@@ -61,59 +61,46 @@ const Header = () => {
         <div className="flex items-center gap-2 sm:gap-4">
           <Select
             value={i18n.language}
-            onValueChange={(lng) => i18n.changeLanguage(lng)}
-          >
-            <SelectTrigger className="w-32 sm:w-48 text-xs sm:text-sm">
-              <SelectValue />
-            </SelectTrigger>
-
-            <SelectContent
-              position="popper"
-              side="bottom"
-              align="start"
-              sideOffset={4}
-              className="mt-1"
-            >
-              <SelectItem value="vi" disabled={i18n.language === "vi"}>
-                <div className="flex items-center gap-2">
-                  <img
-                    src={vi || "/placeholder.svg"}
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    alt="Vietnamese"
-                  />
-                  <span className="text-xs sm:text-sm">
-                    {t("header.vietnamese")}
-                  </span>
-                </div>
-              </SelectItem>
-
-              <SelectItem value="en" disabled={i18n.language === "en"}>
-                <div className="flex items-center gap-2">
-                  <img
-                    src={en || "/placeholder.svg"}
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    alt="English"
-                  />
-                  <span className="text-xs sm:text-sm">
-                    {t("header.english")}
-                  </span>
-                </div>
-              </SelectItem>
-
-              <SelectItem value="tw" disabled={i18n.language === "tw"}>
-                <div className="flex items-center gap-2">
-                  <img
-                    src={tw || "/placeholder.svg"}
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    alt="Taiwan"
-                  />
-                  <span className="text-xs sm:text-sm">
-                    {t("header.taiwan")}
-                  </span>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            onChange={(lng) => {
+              i18n.changeLanguage(lng);
+            }}
+            style={{ width: 160 }}
+            options={[
+              {
+                value: "vi",
+                label: (
+                  <div className="flex items-center gap-2">
+                    <img src={vi} className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm">
+                      {t("header.vietnamese")}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                value: "en",
+                label: (
+                  <div className="flex items-center gap-2">
+                    <img src={en} className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm">
+                      {t("header.english")}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                value: "tw",
+                label: (
+                  <div className="flex items-center gap-2">
+                    <img src={tw} className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm">
+                      {t("header.taiwan")}
+                    </span>
+                  </div>
+                ),
+              },
+            ]}
+          />
 
           <div className="relative" ref={menuRef}>
             <button
@@ -180,6 +167,17 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isLoggingOut && (
+          <motion.div
+            initial={{ opacity: 0, scale: 1 }}
+            animate={{ opacity: 1, scale: 1.05 }}
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 bg-white z-[9999]"
+          />
+        )}
+      </AnimatePresence>
     </header>
   );
 };

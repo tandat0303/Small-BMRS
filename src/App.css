@@ -114,6 +114,30 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.custom-ant-select .ant-select-selector {
+  height: 52px !important; /* tương đương py-4 */
+  padding: 0 16px !important; /* px-4 */
+  border-radius: 0.5rem !important; /* rounded-lg */
+  border: 1px solid #d1d5db !important; /* border-gray-300 */
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.custom-ant-select:hover .ant-select-selector {
+  border-color: #2563eb !important; /* hover blue */
+}
+
+.custom-ant-select.ant-select-focused .ant-select-selector {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+.custom-ant-select.ant-select-open .ant-select-selector {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

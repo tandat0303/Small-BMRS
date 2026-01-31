@@ -97,9 +97,22 @@ export interface Schedule {
   Name: string;
   Factory: string;
   Area: string;
+  ID_User2: string;
   Name_User: string;
   DP_User: string;
   Cancel: string | null;
+}
+
+export interface UpdateSchedulePayload {
+  ID_Room: number;
+  Topic: string;
+  Purpose: string;
+  Time_Start: string;
+  Time_End: string;
+}
+
+export interface UpdateScheduleResponse {
+  result: boolean;
 }
 
 export interface UserInfo {

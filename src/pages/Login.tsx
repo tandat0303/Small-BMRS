@@ -3,17 +3,11 @@ import logo from "../assets/logo-LY.jpg";
 import vi from "../assets/vi.jpg";
 import en from "../assets/en.jpg";
 import tw from "../assets/tw.jpg";
-import { Eye, EyeOff } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
+import { Select, Input } from "antd";
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 
 import { login } from "@/services/auth.api";
 import { useNavigate } from "react-router-dom";
@@ -57,7 +51,17 @@ export default function Login() {
           throw new Error("INVALID_CREDENTIALS");
         }
 
-        navigate("/", { replace: true });
+        Swal.fire({
+          icon: "success",
+          title: t("login.success"),
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+        }).then(() => {
+          setTimeout(() => {
+            navigate("/", { replace: true });
+          }, 200);
+        });
       } catch (error) {
         Swal.fire({
           title: t("login.error.title"),
@@ -72,7 +76,6 @@ export default function Login() {
     },
   });
 
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -111,14 +114,19 @@ export default function Login() {
                     <span className="text-red-500 mr-1">*</span>
                     {t("login.id")}
                   </label>
-                  <input
-                    type="text"
+                  <Input
                     name="cardNumber"
                     value={formik.values.cardNumber}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder={t("login.enter_id")}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    style={{ height: 45 }}
+                    size="large"
+                    status={
+                      formik.errors.cardNumber && formik.touched.cardNumber
+                        ? "error"
+                        : ""
+                    }
                   />
                   {formik.errors.cardNumber && formik.touched.cardNumber && (
                     <div className="text-red-600 text-xs mt-1 animate-slideDown">
@@ -134,22 +142,23 @@ export default function Login() {
                     {t("login.password")}
                   </label>
                   <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
+                    <Input.Password
                       name="password"
                       value={formik.values.password}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       placeholder={t("login.enter_password")}
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      size="large"
+                      style={{ height: 45 }}
+                      iconRender={(visible) =>
+                        visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                      }
+                      status={
+                        formik.errors.password && formik.touched.password
+                          ? "error"
+                          : ""
+                      }
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
                   </div>
                   {formik.errors.password && formik.touched.password && (
                     <div className="text-red-600 text-xs mt-1 animate-slideDown">
@@ -164,22 +173,25 @@ export default function Login() {
                     <span className="text-red-500 mr-1">*</span>
                     {t("login.factory")}
                   </label>
-                  <select
-                    value={formik.values.factory}
-                    name="factory"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white cursor-pointer"
-                  >
-                    <option value="">{t("login.choose_factory")}</option>
-                    <option value="LYV">LYV</option>
-                    <option value="LHG">LHG</option>
-                    <option value="JAZ">JAZ</option>
-                    <option value="LTB">LTB</option>
-                    <option value="JZS">JZS</option>
-                    <option value="LVL">LVL</option>
-                    <option value="LYM/POL">LYM/POL</option>
-                  </select>
+
+                  <Select
+                    placeholder={t("login.choose_factory")}
+                    value={formik.values.factory || undefined}
+                    onChange={(value) => formik.setFieldValue("factory", value)}
+                    onBlur={() => formik.setFieldTouched("factory", true)}
+                    className="custom-ant-select w-full"
+                    style={{ height: 45 }}
+                    options={[
+                      { value: "LYV", label: "LYV" },
+                      { value: "LHG", label: "LHG" },
+                      { value: "JAZ", label: "JAZ" },
+                      { value: "LTB", label: "LTB" },
+                      { value: "JZS", label: "JZS" },
+                      { value: "LVL", label: "LVL" },
+                      { value: "LYM/POL", label: "LYM/POL" },
+                    ]}
+                  />
+
                   {formik.errors.factory && formik.touched.factory && (
                     <div className="text-red-600 text-xs mt-1 animate-slideDown">
                       {formik.errors.factory}
@@ -227,40 +239,43 @@ export default function Login() {
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
                     {t("login.language")}
                   </label>
+
                   <Select
                     value={i18n.language}
-                    onValueChange={(lng) => i18n.changeLanguage(lng)}
-                  >
-                    <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent
-                      position="popper"
-                      side="bottom"
-                      align="start"
-                      sideOffset={4}
-                      className="mt-1"
-                    >
-                      <SelectItem value="vi" disabled={i18n.language === "vi"}>
-                        <div className="flex items-center gap-2">
-                          <img src={vi} className="w-5 h-5" alt="Vietnamese" />
-                          {t("login.vietnamese")}
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="en" disabled={i18n.language === "en"}>
-                        <div className="flex items-center gap-2">
-                          <img src={en} className="w-5 h-5" alt="English" />
-                          {t("login.english")}
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="tw" disabled={i18n.language === "tw"}>
-                        <div className="flex items-center gap-2">
-                          <img src={tw} className="w-5 h-5" alt="Taiwan" />
-                          {t("login.taiwan")}
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onChange={(lng) => {
+                      i18n.changeLanguage(lng);
+                    }}
+                    className="w-full sm:w-48"
+                    options={[
+                      {
+                        value: "vi",
+                        label: (
+                          <div className="flex items-center gap-2">
+                            <img src={vi} className="w-5 h-5" />
+                            {t("login.vietnamese")}
+                          </div>
+                        ),
+                      },
+                      {
+                        value: "en",
+                        label: (
+                          <div className="flex items-center gap-2">
+                            <img src={en} className="w-5 h-5" />
+                            {t("login.english")}
+                          </div>
+                        ),
+                      },
+                      {
+                        value: "tw",
+                        label: (
+                          <div className="flex items-center gap-2">
+                            <img src={tw} className="w-5 h-5" />
+                            {t("login.taiwan")}
+                          </div>
+                        ),
+                      },
+                    ]}
+                  />
                 </div>
               </div>
             </form>

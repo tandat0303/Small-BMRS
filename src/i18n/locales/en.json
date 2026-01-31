@@ -22,7 +22,8 @@
       "title": "Login failed",
       "text": "Incorrect id/password or factory",
       "confirm_btn_txt": "Close"
-    }
+    },
+    "success": "Login successfully!"
   },
   "not_found": {
     "page_not_exist": "The page does not exist",
@@ -84,7 +85,8 @@
       "title": "Error",
       "fetch_failed": "Failed to fetch booking list!",
       "get_info_failed": "Unable to load user's department!",
-      "confirm_btn": "Close"
+      "confirm_btn": "Close",
+      "substitute_not_found": "No substitute found"
     },
     "modal": {
       "room_details": "Meeting Room Details",
@@ -101,9 +103,11 @@
     "minutes": "Minutes",
     "title": "Book Room",
     "room_name": "Room Name",
+    "cardNumber": "Card Number",
+    "Name": "Name",
     "meeting_info": "Meeting Information",
     "meeting_name": "Meeting Name",
-    "meeting_name_placeholder": "Enter meeting name",
+    "meeting_name_placeholder": "Enter meeting topic",
     "meeting_purpose": "Meeting Purpose",
     "meeting_purpose_placeholder": "Enter meeting purpose",
     "host_info": "Host Information",
@@ -118,6 +122,9 @@
     "select_datetime": "Select date & time",
     "select_days": "Select applicable days",
     "select_days_placeholder": "Select applicable days",
+    "idbpm": "BPM Number",
+    "enter_bpm": "Enter BPM number",
+    "required": "Require",
     "start": "Start",
     "end": "End",
     "clear": "Clear",
@@ -127,7 +134,8 @@
     "submitting": "Processing...",
     "success": "Booking successful!",
     "error": {
-      "booking_failed": "Booking failed",
+      "title": "Booking error",
+      "booking_failed": "A meeting is scheduled for this time slot!",
       "enter_bpm": "Please enter BPM number",
       "bpm_not_sign": "The BPM form has not been signed",
       "time_not_in_range": "Meeting time should be between 7:00 and 5:00 PM"
@@ -156,23 +164,45 @@
     "department": "Department",
     "host": "Host",
     "cancel_booking": "Cancel booking",
-    "cancel_confirm": "Are you sure you want to cancel this booking?",
-    "cancel_error": "Cannot cancel booking. Please try again.",
+    "edit_booking": "Edit booking",
     "status": {
       "cancelled": "Cancelled",
       "upcoming": "Upcoming",
-      "completed": "Completed"
+      "completed": "Completed",
+      "ongoing": "Ongoing"
     },
     "error": {
-      "load_failed": "An error occurred while loading history"
+      "load_failed": "An error occurred while loading history",
+      "title": "Error",
+      "edit_failed": "A meeting is scheduled for this time slot!"
     },
     "loading": "Loading...",
     "notify": {
+      "cancel_confirm": "Confirmation of cancellation for the meeting",
+      "cancel_warning": "Are you sure you want to cancel this booking?",
       "cancel_success_title": "Cancelled successfully",
       "cancel_success_desc": "The meeting has been cancelled",
       "cancel_error_title": "Cancel failed",
-      "cancel_error_desc": "An error occurred while canceling the meeting"
-    }
+      "cancel_error_desc": "An error occurred while canceling the meeting",
+      "edit_success": "Updated meeting schedule successfully"
+    },
+    "edit": {
+      "title": "Edit schedule",
+      "cardNumber": "Card Number",
+      "enter_id": "Enter ID",
+      "name_dept": "Name - Department",
+      "topic": "Topic",
+      "meeting_name_placeholder": "Enter meeting topic",
+      "purpose": "Purpose",
+      "meeting_purpose_placeholder": "Enter meeting purpose",
+      "time": "Time",
+      "start": "Start",
+      "end": "End",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save"
+    },
+    "required": "Require"
   },
   "common": {
     "yes": "Confirm",
