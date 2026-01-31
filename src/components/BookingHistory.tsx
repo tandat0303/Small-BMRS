@@ -19,7 +19,6 @@ import storage from "@/lib/storage";
 import { formatDateTime, getMeetingStatus, isUpcoming } from "@/lib/helpers";
 import { useTranslation } from "react-i18next";
 import EditBookingModal from "./EditBookingModal";
-import dayjs from "dayjs";
 
 const BookingHistory: React.FC = () => {
   const { t } = useTranslation();

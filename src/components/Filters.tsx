@@ -141,12 +141,11 @@ const Filters: React.FC<FilterProps> = ({
           ...prev,
           timeFilter: {
             mode: "range",
-            startDateTime: range[0].toISOString(),
-            endDateTime: range[1].toISOString(),
+            startDateTime: range[0]?.toISOString() ?? null,
+            endDateTime: range[1]?.toISOString() ?? null,
           },
         }));
       } else {
-        // If range is cleared but mode is still "range", keep the mode but clear dates
         setFilters((prev) => ({
           ...prev,
           timeFilter: {
