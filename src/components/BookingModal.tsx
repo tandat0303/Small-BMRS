@@ -458,6 +458,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                       message: t("booking_modal.required"),
                     },
                   ]}
+                  required
                 >
                   <RangePicker
                     showTime={{

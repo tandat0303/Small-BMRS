@@ -36,8 +36,6 @@ const BookingHistory: React.FC = () => {
     cancelled: "desc",
   });
 
-  const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
-
   useEffect(() => {
     let isMounted = true;
 
@@ -263,7 +261,7 @@ const BookingHistory: React.FC = () => {
             const startDateTime = formatDateTime(meeting.Time_Start);
             const endDateTime = formatDateTime(meeting.Time_End);
             const upcoming = isUpcoming(meeting.Time_Start);
-            const imageURL = `${IMAGE_URL}/assets/${meeting.imageRoom}`;
+            const imageURL = `/images/assets/${meeting.imageRoom}`;
 
             return (
               <div
