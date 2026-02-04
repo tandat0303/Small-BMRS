@@ -41,9 +41,9 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  // const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
-  // const imageUrl = `${IMAGE_URL}/assets/${room.imageRoom}`;
-  const imageUrl = `/images/assets/${room.imageRoom}`;
+  const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
+  const imageUrl = `${IMAGE_URL}/assets/${room.imageRoom}`;
+  // const imageUrl = `/images/assets/${room.imageRoom}`;
 
   const todayBookings = room.bookings || [];
 

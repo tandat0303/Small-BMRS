@@ -3,7 +3,7 @@ import axios from "axios";
 import { navigateTo } from "./navigation";
 
 const axiosConfig = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
