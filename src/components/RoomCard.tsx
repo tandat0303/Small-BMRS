@@ -9,6 +9,7 @@ import {
   Warehouse,
   Eye,
   RefreshCcw,
+  X,
 } from "lucide-react";
 import { Image, Popover } from "antd";
 import type { Room } from "@/types";
@@ -525,9 +526,25 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                   </div>
                 </div>
 
-                {/* Right side - Booking details */}
-                <div className="w-100 bg-white overflow-y-auto">
-                  <div className="p-6">
+                <div className="w-full md:w-[420px] bg-white overflow-y-auto relative">
+                  <button
+                    onClick={() => setShowDetailsModal(false)}
+                    className="
+                      md:hidden
+                      absolute top-3 right-3
+                      bg-gray-100 hover:bg-gray-200
+                      text-gray-700
+                      rounded-full
+                      p-2
+                      shadow
+                      z-20
+                      transition
+                    "
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  <div className="p-6 pt-12 md:pt-6">
                     <div className="flex items-center gap-2 mb-5">
                       <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
                       <h3 className="font-bold text-base text-gray-800">

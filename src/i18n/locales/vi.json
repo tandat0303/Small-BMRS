@@ -133,7 +133,7 @@
     "select_days_placeholder": "Chọn thứ áp dụng",
     "idbpm": "Số BPM",
     "enter_bpm": "Vui lòng nhập số BPM",
-    "required": "Bắt buộc",
+    "required": "Vui lòng nhập thông tin",
     "start": "Bắt đầu",
     "end": "Kết thúc",
     "clear": "Clear",
@@ -147,7 +147,9 @@
       "booking_failed": "Đã có lịch họp vào khung giờ này!",
       "enter_bpm": "Vui lòng nhập số BPM",
       "bpm_not_sign": "Phiếu BPM chưa được ký duyệt",
-      "time_not_in_range": "Thời gian họp phải trong khoảng 07:00–17:00"
+      "time_not_in_range": "Thời gian họp phải trong khoảng 07:00–17:00",
+      "end_must_be_after_start": "Thời gian cuộc họp không được trùng",
+      "working_time": "Ngoài giờ hành chính"
     },
     "prev_month": "Tháng trước",
     "next_month": "Tháng sau",

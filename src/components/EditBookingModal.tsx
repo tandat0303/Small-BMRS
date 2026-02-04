@@ -25,6 +25,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   const { t } = useTranslation();
 
   const [form] = Form.useForm();
+
+  const watched = Form.useWatch([], form);
+
   const { RangePicker } = DatePicker;
 
   const [loading, setLoading] = useState(false);
@@ -32,6 +35,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     name: "",
     dept: "",
   });
+
+  const [initialValues, setInitialValues] = useState<any>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const user = storage.get("user");
   const userFac = user.factory;
@@ -48,6 +54,27 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
         dayjs(meeting.Time_End.replace("Z", "")),
       ],
     });
+  }, [meeting]);
+
+  useEffect(() => {
+    if (!meeting) return;
+
+    const init = {
+      ID_User: meeting.ID_User,
+      Topic: meeting.Topic,
+      Purpose: meeting.Purpose,
+      dateTimeRange: [
+        dayjs(meeting.Time_Start.replace("Z", "")),
+        dayjs(meeting.Time_End.replace("Z", "")),
+      ],
+    };
+
+    form.setFieldsValue(init);
+    setInitialValues(init);
+
+    setTimeout(() => {
+      setIsInitialized(true);
+    }, 0);
   }, [meeting]);
 
   const loadUserInfo = async (userId: string) => {
@@ -133,6 +160,39 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       document.body.style.overflow = originalOverflow;
     };
   }, [onClose]);
+
+  const isSubmitDisabled = () => {
+    if (!isInitialized) return true;
+
+    const values = form.getFieldsValue();
+    const errors = form.getFieldsError();
+    const hasErrors = errors.some(({ errors }) => errors.length);
+
+    const [start, end] = values.dateTimeRange || [];
+
+    return (
+      loading ||
+      !isFormChanged() ||
+      hasErrors ||
+      !values.Topic?.trim() ||
+      !values.Purpose?.trim() ||
+      !start ||
+      !end
+    );
+  };
+
+  const isFormChanged = () => {
+    if (!isInitialized || !initialValues) return false;
+
+    const current = form.getFieldsValue();
+
+    return (
+      current.Topic !== initialValues.Topic ||
+      current.Purpose !== initialValues.Purpose ||
+      !current.dateTimeRange?.[0]?.isSame(initialValues.dateTimeRange?.[0]) ||
+      !current.dateTimeRange?.[1]?.isSame(initialValues.dateTimeRange?.[1])
+    );
+  };
 
   return (
     <>
@@ -276,6 +336,27 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                 name="dateTimeRange"
                 rules={[
                   { required: true, message: t("booking_history.required") },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const [start, end] = value;
+
+                      if (!start || !end)
+                        return Promise.reject(t("booking_history.required"));
+
+                      if (!end.isAfter(start))
+                        return Promise.reject(
+                          t("booking_modal.error.end_must_be_after_start"),
+                        );
+
+                      if (start.hour() < 7 || end.hour() >= 17)
+                        return Promise.reject(
+                          t("booking_modal.error.working_time"),
+                        );
+
+                      return Promise.resolve();
+                    },
+                  },
                 ]}
                 className="mb-0"
               >
@@ -297,15 +378,23 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                   }}
                   disabledTime={(date, type) => {
                     if (!date) return {};
+
                     const now = dayjs();
                     const [start] = form.getFieldValue("dateTimeRange") || [];
+
+                    const baseDisabledHours = [
+                      ...Array.from({ length: 7 }, (_, i) => i),
+                      ...Array.from({ length: 7 }, (_, i) => i + 17),
+                    ];
 
                     if (date.isSame(now, "day")) {
                       const currentHour = now.hour();
                       const currentMinute = now.minute();
                       return {
-                        disabledHours: () =>
-                          Array.from({ length: currentHour }, (_, i) => i),
+                        disabledHours: () => [
+                          ...baseDisabledHours,
+                          ...Array.from({ length: currentHour }, (_, i) => i),
+                        ],
                         disabledMinutes: (hour: number) =>
                           hour === currentHour
                             ? Array.from({ length: currentMinute }, (_, i) => i)
@@ -316,22 +405,24 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                     if (type === "end" && start && date.isSame(start, "day")) {
                       const startHour = start.hour();
                       const startMinute = start.minute();
+
                       return {
-                        disabledHours: () =>
-                          Array.from({ length: startHour }, (_, i) => i),
+                        disabledHours: () => [
+                          ...baseDisabledHours,
+                          ...Array.from({ length: startHour + 1 }, (_, i) => i),
+                        ],
                         disabledMinutes: (hour: number) =>
                           hour === startHour
-                            ? Array.from({ length: startMinute }, (_, i) => i)
+                            ? Array.from(
+                                { length: startMinute + 1 },
+                                (_, i) => i,
+                              )
                             : [],
                       };
                     }
 
                     return {
-                      disabledHours: () => [
-                        ...Array.from({ length: 7 }, (_, i) => i),
-                        ...Array.from({ length: 7 }, (_, i) => i + 17),
-                      ],
-                      disabledMinutes: () => [],
+                      disabledHours: () => baseDisabledHours,
                     };
                   }}
                 />
@@ -350,7 +441,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
 
             <button
               onClick={() => form.submit()}
-              disabled={loading}
+              disabled={isSubmitDisabled()}
               className="px-4 sm:px-5 py-1.5 sm:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
             >
               {loading ? (

@@ -133,7 +133,7 @@
     "select_days_placeholder": "選擇適用星期",
     "idbpm": "BPM 編號",
     "enter_bpm": "請輸入 BPM 編號",
-    "required": "必填",
+    "required": "請填寫資料",
     "start": "開始",
     "end": "結束",
     "clear": "清除",
@@ -147,7 +147,9 @@
       "booking_failed": "這個時段安排了會議！",
       "enter_bpm": "請輸入 BPM 編號",
       "bpm_not_sign": "BPM 尚未簽核",
-      "time_not_in_range": "會議時間需在 07:00–17:00 之間"
+      "time_not_in_range": "會議時間需在 07:00–17:00 之間",
+      "end_must_be_after_start": "會議時間不得重疊",
+      "working_time": "工作時間以外"
     },
     "prev_month": "上個月",
     "next_month": "下個月",

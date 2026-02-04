@@ -136,7 +136,7 @@
     "select_days_placeholder": "Select applicable days",
     "idbpm": "BPM Number",
     "enter_bpm": "Enter BPM number",
-    "required": "Require",
+    "required": "Please enter the information",
     "start": "Start",
     "end": "End",
     "clear": "Clear",
@@ -150,7 +150,9 @@
       "booking_failed": "A meeting is scheduled for this time slot!",
       "enter_bpm": "Please enter BPM number",
       "bpm_not_sign": "The BPM form has not been signed",
-      "time_not_in_range": "Meeting time should be between 7:00 and 5:00 PM"
+      "time_not_in_range": "Meeting time should be between 7:00 and 5:00 PM",
+      "end_must_be_after_start": "Meeting times must not overlap",
+      "working_time": "Outside of working hours"
     },
     "prev_month": "Previous month",
     "next_month": "Next month",

@@ -14,9 +14,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
   const [form] = Form.useForm();
 
-  const [dateTimeRange, setDateTimeRange] = useState<
-    [dayjs.Dayjs | null, dayjs.Dayjs | null]
-  >([null, null]);
+  const watchedValues = Form.useWatch([], form);
+
+  const idUser2 = Form.useWatch("ID_User2", form);
+
   const [userDept, setUserDept] = useState("");
   const [userDeptSerialKey, setUserDeptSerialKey] = useState("");
   const user = storage.get("user");
@@ -69,6 +70,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       getUserDept();
     }
   }, [userId, userFac]);
+
+  useEffect(() => {
+    if (!idUser2 || !idUser2.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        substituteName: "",
+        substituteDept: "",
+      }));
+    }
+  }, [idUser2]);
 
   const [formData, setFormData] = useState({
     Topic: "",
@@ -155,8 +166,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   const handleSubmit = async (values: any) => {
     if (isSubmitDisabled()) return;
 
-    if (!isValidTimeRange()) return;
-
     setLoading(true);
 
     try {
@@ -188,8 +197,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         return;
       }
 
-      const startISO = dayjs(formData.Time_Start).format("YYYY-MM-DD HH:mm:ss");
-      const endISO = dayjs(formData.Time_End).format("YYYY-MM-DD HH:mm:ss");
+      const [start, end] = values.timeRange;
+
+      const startISO = start.format("YYYY-MM-DD HH:mm:ss");
+      const endISO = end.format("YYYY-MM-DD HH:mm:ss");
 
       const payload = {
         ID_Room: room.ID_Room,
@@ -242,16 +253,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       });
 
       const info = res?.userInfo;
-
-      if (!info) throw new Error("User not found");
+      if (!info) throw new Error();
 
       setFormData((prev) => ({
         ...prev,
-        ID_User2: id_user2,
         substituteName: info.Person_Name,
         substituteDept: info.Department_Name,
       }));
-    } catch (error) {
+    } catch {
       setFormData((prev) => ({
         ...prev,
         substituteName: "",
@@ -266,40 +275,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     }
   };
 
-  const handleTimeChange = (values: any) => {
-    if (!values) return;
-
-    const [start, end] = values;
-
-    setDateTimeRange(values);
-
-    setFormData((prev) => ({
-      ...prev,
-      Time_Start: start ? start.format("YYYY-MM-DD HH:mm") : "",
-      Time_End: end ? end.format("YYYY-MM-DD HH:mm") : "",
-    }));
-  };
-
   const isSubmitDisabled = () => {
     const values = form.getFieldsValue();
+    const errors = form.getFieldsError();
+    const hasErrors = errors.some(({ errors }) => errors.length);
+
+    const [start, end] = values.timeRange || [];
+
     return (
       loading ||
+      hasErrors ||
       !values.Topic?.trim() ||
       !values.Purpose?.trim() ||
       !values.ID_User2?.trim() ||
-      !formData.Time_Start ||
-      !formData.Time_End ||
+      !start ||
+      !end ||
       (needBpmCheck && !values.idbpm?.trim())
     );
-  };
-
-  const isValidTimeRange = () => {
-    const start = dayjs(formData.Time_Start);
-    const end = dayjs(formData.Time_End);
-
-    if (!start.isValid() || !end.isValid()) return false;
-
-    return end.isAfter(start) && start.hour() >= 7 && end.hour() < 17;
   };
 
   return (
@@ -310,7 +302,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       {/* Modal */}
       <div
         className="
-          relative bg-white w-full sm:max-w-2xl
+          relative bg-white w-full sm:max-w-4xl
           max-h-[85dvh]
           rounded-t-2xl sm:rounded-2xl
           flex flex-col
@@ -354,14 +346,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                   label={t("booking_modal.cardNumber")}
                   className="mb-0"
                 >
-                  <Input value={user.userId} disabled className="bg-white" />
+                  <Input
+                    value={user.userId}
+                    disabled
+                    className="bg-white h-10"
+                  />
                 </Form.Item>
 
                 <Form.Item label={t("booking_modal.Name")} className="mb-0">
                   <Input
                     value={`${user.fullName} - ${userDept}`}
                     disabled
-                    className="bg-white"
+                    className="bg-white h-10"
                   />
                 </Form.Item>
               </div>
@@ -452,13 +448,34 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                 <Form.Item
                   label={t("booking_modal.select_datetime")}
                   className="mb-0"
+                  name="timeRange"
                   rules={[
                     {
                       required: true,
                       message: t("booking_modal.required"),
                     },
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.resolve();
+
+                        const [start, end] = value;
+                        if (!start || !end) return Promise.reject();
+
+                        if (!end.isAfter(start)) {
+                          return Promise.reject(
+                            t("booking_modal.error.end_must_be_after_start"),
+                          );
+                        }
+
+                        if (start.hour() < 7 || end.hour() >= 17)
+                          return Promise.reject(
+                            t("booking_modal.error.working_time"),
+                          );
+
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
-                  required
                 >
                   <RangePicker
                     showTime={{
@@ -467,83 +484,50 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                       // hideDisabledOptions: true,
                     }}
                     format="YYYY-MM-DD HH:mm"
-                    value={dateTimeRange}
-                    onChange={handleTimeChange}
                     className="w-full rounded-lg h-10"
                     placeholder={[
                       t("booking_modal.start"),
                       t("booking_modal.end"),
                     ]}
-                    disabledDate={(current) => {
-                      if (!current) return false;
-                      const [start] = dateTimeRange;
-                      if (current < dayjs().startOf("day")) return true;
-                      if (start && current.isBefore(start, "day")) return true;
-                      return false;
-                    }}
+                    disabledDate={(current) =>
+                      current && current < dayjs().startOf("day")
+                    }
                     disabledTime={(date, type) => {
                       if (!date) return {};
 
-                      const now = dayjs();
-                      const [start] = dateTimeRange;
+                      const start = form.getFieldValue("timeRange")?.[0];
 
-                      if (type === "start") {
-                        if (date.isSame(now, "date")) {
-                          const currentHour = now.hour();
-                          const currentMinute = now.minute();
+                      const baseDisabledHours = [
+                        ...Array.from({ length: 7 }, (_, i) => i),
+                        ...Array.from({ length: 7 }, (_, i) => i + 17),
+                      ];
 
-                          return {
-                            disabledHours: () =>
-                              Array.from({ length: currentHour }, (_, i) => i),
-
-                            disabledMinutes: (hour: number) =>
-                              hour === currentHour
-                                ? Array.from(
-                                    { length: currentMinute },
-                                    (_, i) => i,
-                                  )
-                                : [],
-                          };
-                        }
+                      if (type === "end" && start) {
+                        const startHour = dayjs(start).hour();
 
                         return {
                           disabledHours: () => [
-                            ...Array.from({ length: 7 }, (_, i) => i),
-                            ...Array.from({ length: 7 }, (_, i) => i + 17),
+                            ...baseDisabledHours,
+                            ...Array.from(
+                              { length: startHour + 1 },
+                              (_, i) => i,
+                            ),
                           ],
-                          disabledMinutes: () => [],
+                          disabledMinutes: (selectedHour) => {
+                            if (selectedHour === startHour) {
+                              return Array.from(
+                                { length: dayjs(start).minute() + 1 },
+                                (_, i) => i,
+                              );
+                            }
+                            return [];
+                          },
                         };
                       }
 
-                      if (type === "end") {
-                        if (start && date.isSame(start, "date")) {
-                          const startHour = start.hour();
-                          const startMinute = start.minute();
-
-                          return {
-                            disabledHours: () =>
-                              Array.from({ length: startHour }, (_, i) => i),
-
-                            disabledMinutes: (hour: number) =>
-                              hour === startHour
-                                ? Array.from(
-                                    { length: startMinute },
-                                    (_, i) => i,
-                                  )
-                                : [],
-                          };
-                        }
-
-                        return {
-                          disabledHours: () => [
-                            ...Array.from({ length: 7 }, (_, i) => i),
-                            ...Array.from({ length: 7 }, (_, i) => i + 17),
-                          ],
-                          disabledMinutes: () => [],
-                        };
-                      }
-
-                      return {};
+                      return {
+                        disabledHours: () => baseDisabledHours,
+                      };
                     }}
                   />
                 </Form.Item>
