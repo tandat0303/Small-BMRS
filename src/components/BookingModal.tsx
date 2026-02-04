@@ -14,8 +14,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
   const [form] = Form.useForm();
 
-  const watchedValues = Form.useWatch([], form);
-
   const idUser2 = Form.useWatch("ID_User2", form);
 
   const [userDept, setUserDept] = useState("");

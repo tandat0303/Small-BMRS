@@ -26,8 +26,6 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
 
   const [form] = Form.useForm();
 
-  const watched = Form.useWatch([], form);
-
   const { RangePicker } = DatePicker;
 
   const [loading, setLoading] = useState(false);
