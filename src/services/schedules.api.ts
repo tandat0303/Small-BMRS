@@ -24,9 +24,8 @@ export const scheduleAPI = {
       });
 
       return res.data;
-    } catch (error) {
-      console.log("Lỗi khi lấy danh sách lịch trình", error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error?.response?.message);
     }
   },
 
@@ -52,9 +51,8 @@ export const scheduleAPI = {
       );
 
       return res.data;
-    } catch (error) {
-      console.log("Lỗi khi lấy danh sách lịch trình", error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error?.response?.message);
     }
   },
 
@@ -76,9 +74,8 @@ export const scheduleAPI = {
       );
 
       return res.data;
-    } catch (error) {
-      console.log("Lỗi khi lấy danh sách lịch trình", error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error?.response?.message);
     }
   },
 

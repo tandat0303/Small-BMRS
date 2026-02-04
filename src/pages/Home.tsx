@@ -72,7 +72,7 @@ const Home = () => {
           {disabled && <div className="absolute inset-0 z-10 cursor-no-drop" />}
 
           <div className={disabled ? "opacity-50 select-none" : ""}>
-            <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="max-w-8xl mx-auto px-4 py-4">
               <div className="flex items-center justify-end">
                 <button
                   onClick={() => setShowMobileFilters(true)}
@@ -89,9 +89,9 @@ const Home = () => {
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row flex-1 lg:overflow-auto">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Main Content - Scrollable */}
-        <div className="flex-1 order-2 lg:order-1 flex flex-col lg:overflow-auto">
+        <div className="flex-1 order-2 lg:order-1 flex flex-col overflow-hidden">
           {/* Tabs */}
           <div className="bg-white border-b border-gray-200 shadow-sm flex-shrink-0 z-10">
             <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">

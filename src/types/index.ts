@@ -63,20 +63,41 @@ export interface BookingFormData {
   ID_User: string;
   Topic: string;
   Purpose: string;
-  ID_User2: number;
+  ID_User2: string;
   Time_Start: string;
   Time_End: string;
   Name_User: string;
   DP_User: string;
   idbpm?: string;
-  dayOnly: string;
-  // dayOnlys: string[];
+  dayOnly: boolean;
+  dayOnlys: number[];
 }
 
 export interface LoginPayload {
   userId: string;
   password: string;
   factory: string;
+}
+
+export interface User {
+  userId: string;
+  fullName: string;
+  birthday: string;
+  factory: string;
+  idCard: string;
+  isIT: string | null;
+  level: string;
+  nameshow: string;
+  passDate: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  accessToken: string | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  login: (user: User, accessToken: string) => void;
+  logout: () => void;
 }
 
 export interface UserInfoPayload {
@@ -133,4 +154,9 @@ export interface UserInfo {
   Email: string;
   Vehicle: string;
   Address_Live: string;
+}
+
+export interface StorageSchema {
+  user: User;
+  accessToken: string;
 }

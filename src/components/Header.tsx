@@ -10,16 +10,20 @@ import storage from "@/lib/storage";
 import { AnimatePresence, motion } from "framer-motion";
 import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
+import { Spin } from "antd";
 
 const Header = () => {
   const { t } = useTranslation();
+
+  const { logout } = useAuth();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const user = JSON.parse(storage.get("user"));
+  const user = storage.get("user");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,9 +41,9 @@ const Header = () => {
     setIsLoggingOut(true);
 
     setTimeout(() => {
-      storage.clear();
+      logout();
       navigate("/login", { replace: true });
-    }, 600);
+    }, 700);
   };
 
   return (
@@ -171,11 +175,13 @@ const Header = () => {
       <AnimatePresence>
         {isLoggingOut && (
           <motion.div
-            initial={{ opacity: 0, scale: 1 }}
-            animate={{ opacity: 1, scale: 1.05 }}
-            transition={{ duration: 0.6 }}
-            className="fixed inset-0 bg-white z-[9999]"
-          />
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <Spin fullscreen size="large" tip={t("header.logging_out")} />
+          </motion.div>
         )}
       </AnimatePresence>
     </header>

@@ -12,7 +12,7 @@ const axiosConfig = axios.create({
 
 axiosConfig.interceptors.request.use(
   (config) => {
-    const token = storage.get("accessToken");
+    const token = storage.get("accessToken", "");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,9 +28,7 @@ axiosConfig.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      storage.remove("accessToken");
-      storage.remove("user");
-
+      storage.clear();
       navigateTo("/login");
     }
     return Promise.reject(error);

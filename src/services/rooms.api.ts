@@ -6,9 +6,8 @@ export const roomAPI = {
     try {
       const res = await axiosConfig.get(`/bookmeeting/${factory}/getallroom`);
       return res.data;
-    } catch (error) {
-      console.log("Lỗi khi lấy danh sách phòng", error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error?.response?.message);
     }
   },
 
@@ -18,9 +17,8 @@ export const roomAPI = {
         meeting: data,
       });
       return response.data;
-    } catch (error) {
-      console.error("Error booking room:", error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error?.response?.message);
     }
   },
 
@@ -30,9 +28,8 @@ export const roomAPI = {
         `/bookmeeting/checkbpmsign/${bpmId}`,
       );
       return response.data;
-    } catch (error) {
-      console.error("Error checking bpm sign:", error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error?.response?.message);
     }
   },
 };

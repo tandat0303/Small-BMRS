@@ -8,9 +8,8 @@ export const userInfoAPI = {
         `/${payload.factory}/user/getUserInfo/${payload.userId}`,
       );
       return res.data;
-    } catch (error) {
-      console.log("Lỗi khi lấy thông tin user", error);
-      throw error;
+    } catch (error: any) {
+      throw new Error(error?.response?.message);
     }
   },
 };

@@ -60,7 +60,7 @@ const BookingHistory: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const user = JSON.parse(storage.get("user"));
+      const user = storage.get("user");
       const userId = user.userId;
       const data = await scheduleAPI.getMySchedule(user.factory, userId);
 

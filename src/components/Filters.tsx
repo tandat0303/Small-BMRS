@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Filter, RefreshCcw } from "lucide-react";
 import type { FilterProps } from "../types";
 import storage from "@/lib/storage";
@@ -15,19 +15,16 @@ const Filters: React.FC<FilterProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const user = JSON.parse(storage.get("user"));
+  const user = storage.get("user");
 
   const isShowFactoryRadio = ["5", "7", 5, 7].includes(user?.level);
 
-  const [showDateModal, setShowDateModal] = useState(false);
   const [userDefaultFactory, setUserDefaultFactory] = useState<string>("");
 
   const [range, setRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([
     null,
     null,
   ]);
-
-  const timeRangeRef = useRef<HTMLDivElement>(null);
 
   const { RangePicker } = DatePicker;
 
@@ -116,23 +113,6 @@ const Filters: React.FC<FilterProps> = ({
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        timeRangeRef.current &&
-        timeRangeRef.current.contains(event.target as Node)
-      ) {
-        setShowDateModal(false);
-      }
-    };
-
-    if (showDateModal) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showDateModal]);
-
   // Update timeFilter when range changes
   useEffect(() => {
     if (filters.timeFilter.mode === "range") {
@@ -191,7 +171,7 @@ const Filters: React.FC<FilterProps> = ({
       {disabled && <div className="absolute inset-0 z-10 cursor-no-drop" />}
 
       <div className={disabled ? "opacity-60 select-none" : ""}>
-        <aside className="w-full md:w-90 bg-white border-l border-gray-200 p-4 sm:p-6 overflow-y-auto h-full">
+        <aside className="w-full md:w-[28rem] bg-white border-l border-gray-200 px-4 sm:px-6 py-6 sm:py-8 h-screen flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Filter className="w-5 h-5 text-gray-700 flex-shrink-0" />
@@ -266,6 +246,12 @@ const Filters: React.FC<FilterProps> = ({
                     format: "HH:mm",
                     minuteStep: 5,
                   }}
+                  disabledTime={() => ({
+                    disabledHours: () => [
+                      0, 1, 2, 3, 4, 5, 6, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                  })}
+                  placeholder={[t("filters.start"), t("filters.end")]}
                   format="YYYY-MM-DD HH:mm"
                   value={range}
                   onChange={(values) => setRange(values as any)}
@@ -278,10 +264,11 @@ const Filters: React.FC<FilterProps> = ({
           {/* Area Filter */}
           <div className="mb-3">
             <h3 className="text-sm font-medium text-gray-900 mb-3">
-              {t("filters.area")}{" "}
+              {t("filters.area")}
+              {/* {" "}
               {areas.length > 0 && (
                 <span className="text-gray-500">({areas.length})</span>
-              )}
+              )} */}
             </h3>
             {areas.length === 0 ? (
               <div className="text-sm text-gray-400 italic py-2">
@@ -381,7 +368,7 @@ const Filters: React.FC<FilterProps> = ({
                     onClick={() => selectFactory(factory)}
                     className={`px-3 py-1 text-sm rounded border transition-colors cursor-pointer ${
                       filters.factories.includes(factory)
-                        ? "bg-blue-500 border-blue-500 text-white font-medium"
+                        ? "bg-blue-50 border-blue-500 text-blue-700"
                         : "border-gray-300 text-gray-600 hover:bg-gray-50"
                     }`}
                   >

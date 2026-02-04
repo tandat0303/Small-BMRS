@@ -20,8 +20,9 @@
     },
     "error": {
       "title": "Login failed",
-      "text": "Incorrect id/password or factory",
-      "confirm_btn_txt": "Close"
+      "text": "Incorrect login information",
+      "confirm_btn_txt": "Close",
+      "server": "Server error, please try again later"
     },
     "success": "Login successfully!"
   },
@@ -32,11 +33,16 @@
     "go_back": "Go back",
     "back_to_homepage": "Back to Home Page"
   },
+  "auto_logout": {
+    "session_expire": "The login session is about to end",
+    "text": "You are about to be logged out due to inactivity."
+  },
   "header": {
     "vietnamese": "Vietnamese",
     "english": "English",
     "taiwan": "Taiwan",
-    "logout": "Logout"
+    "logout": "Logout",
+    "logging_out": "Logging out ..."
   },
   "filters": {
     "title": "Meeting Room Filters",
@@ -46,6 +52,8 @@
     "time_range": "Time range",
     "select_time_range": "Select time range",
     "choose_range": "Choose time range",
+    "start": "Start",
+    "end": "End",
     "area": "Area",
     "area_count": "areas",
     "select_factory_first": "Select factory to view areas",
@@ -70,6 +78,9 @@
   "rooms_list": {
     "no_note_found": "No suitable meeting rooms found"
   },
+  "room": {
+    "note": "ONLY for BB HQ during BB Team Travel. Please contact before booking."
+  },
   "room_card": {
     "preview": "Preview",
     "capacity": "Capacity",
@@ -77,7 +88,7 @@
     "area": "Area",
     "view_details": "View Details",
     "book_now": "Book Now",
-    "today_bookings": "Today's Bookings",
+    "today_bookings": "Meeting schedule list",
     "no_bookings_today": "No meetings scheduled for today",
     "see_more": "See More",
     "note": "Note",
@@ -95,7 +106,8 @@
       "no_meetings_today": "No meetings scheduled for today",
       "close": "Close",
       "capacity": "Capacity",
-      "timeline": "Timeline"
+      "timeline": "Timeline",
+      "refresh": "Refresh"
     }
   },
   "booking_modal": {
@@ -119,7 +131,7 @@
     "bpm_number": "BPM Number",
     "bpm_number_placeholder": "Enter BPM number",
     "date_time": "Date & Time",
-    "select_datetime": "Select date & time",
+    "select_datetime": "Meeting time",
     "select_days": "Select applicable days",
     "select_days_placeholder": "Select applicable days",
     "idbpm": "BPM Number",

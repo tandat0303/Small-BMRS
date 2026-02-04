@@ -20,16 +20,22 @@
     },
     "error": {
       "title": "Đăng nhập thất bại",
-      "text": "Sai tài khoản/mật khẩu hoặc nhà máy",
+      "server": "Server lỗi, vui lòng thử lại sau",
+      "text": "Sai thông tin đăng nhập",
       "confirm_btn_txt": "Đóng"
     },
     "success": "Đăng nhập thành công!"
+  },
+  "auto_logout": {
+    "session_expire": "Phiên đăng nhập sắp kết thúc",
+    "text": "Bạn sắp bị đăng xuất do không hoạt động"
   },
   "header": {
     "vietnamese": "Tiếng Việt",
     "english": "Tiếng Anh",
     "taiwan": "Tiếng Trung",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "logging_out": "Đang đăng xuất ..."
   },
   "not_found": {
     "page_not_exist": "Trang không tồn tại",
@@ -46,6 +52,8 @@
     "time_range": "Khoảng thời gian",
     "select_time_range": "Chọn khoảng thời gian",
     "choose_range": "Chọn khoảng thời gian",
+    "start": "Bắt đầu",
+    "end": "Kết thúc",
     "area": "Khu vực",
     "area_count": "khu vực",
     "select_factory_first": "Chọn nhà máy để xem khu vực",
@@ -70,6 +78,9 @@
   "rooms_list": {
     "no_note_found": "Không tìm thấy phòng họp phù hợp"
   },
+  "room": {
+    "note": "Chỉ dành riêng cho BB HQ trong các chuyến đi công tác của đội ngũ BB. Vui lòng liên hệ trước khi đặt chỗ."
+  },
   "room_card": {
     "preview": "Xem",
     "capacity": "Sức chứa",
@@ -77,7 +88,7 @@
     "area": "Khu vực",
     "view_details": "Xem chi tiết",
     "book_now": "Đặt phòng",
-    "today_bookings": "Lịch hôm nay",
+    "today_bookings": "Danh sách lịch họp",
     "no_bookings_today": "Hôm nay chưa có cuộc họp",
     "see_more": "Xem thêm",
     "note": "Ghi chú",
@@ -95,7 +106,8 @@
       "no_meetings_today": "Hôm nay chưa có cuộc họp",
       "close": "Đóng",
       "capacity": "Sức chứa",
-      "timeline": "Thời gian biểu"
+      "timeline": "Thời gian biểu",
+      "refresh": "Làm mới"
     }
   },
   "booking_modal": {
@@ -116,7 +128,7 @@
     "bpm_number": "Số BPM",
     "bpm_number_placeholder": "Nhập số BPM",
     "date_time": "Ngày & Giờ",
-    "select_datetime": "Chọn ngày & giờ",
+    "select_datetime": "Thời gian cuộc họp",
     "select_days": "Chỉ áp dụng các thứ được chọn",
     "select_days_placeholder": "Chọn thứ áp dụng",
     "idbpm": "Số BPM",

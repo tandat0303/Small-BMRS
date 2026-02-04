@@ -33,7 +33,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     dept: "",
   });
 
-  const user = JSON.parse(storage.get("user") || "{}");
+  const user = storage.get("user");
   const userFac = user.factory;
 
   useEffect(() => {
@@ -88,10 +88,6 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
         meeting.ID_Schedule,
         payload,
       );
-
-      console.log("Sending payload:", payload);
-      console.log("API time", meeting.Time_Start);
-      console.log("UI show", dayjs.utc(meeting.Time_Start).local().format());
 
       if (res.result) {
         notification.success({
@@ -244,7 +240,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                   placeholder={t(
                     "booking_history.edit.meeting_name_placeholder",
                   )}
-                  className="rounded-lg text-sm"
+                  className="rounded-lg text-sm h-10"
                 />
               </Form.Item>
 
@@ -290,7 +286,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                     hideDisabledOptions: true,
                   }}
                   format="YYYY-MM-DD HH:mm"
-                  className="w-full rounded-lg text-sm"
+                  className="w-full rounded-lg text-sm h-10"
                   placeholder={[
                     t("booking_history.edit.start"),
                     t("booking_history.edit.end"),

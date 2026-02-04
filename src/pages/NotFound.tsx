@@ -3,6 +3,7 @@
 import { useNavigate } from "react-router-dom";
 import { Home, Search, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
+// import { Button, Result } from "antd";
 
 export default function NotFound() {
   const { t } = useTranslation();
@@ -59,5 +60,12 @@ export default function NotFound() {
         </div>
       </div>
     </div>
+    // <Result
+    //   status="404"
+    //   title="404"
+    //   subTitle="Sorry, the page you visited does not exist."
+    //   extra={<Button type="primary">Back Home</Button>}
+    //   className="items-center justify-center mt-25"
+    // />
   );
 }

@@ -19,7 +19,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   >([null, null]);
   const [userDept, setUserDept] = useState("");
   const [userDeptSerialKey, setUserDeptSerialKey] = useState("");
-  const user = JSON.parse(storage.get("user") || "{}");
+  const user = storage.get("user");
   const userFac = user.factory;
   const userId = user.userId;
 
@@ -57,8 +57,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           DP_User: deptName,
         }));
       } catch (error) {
-        console.error("Get user info error:", error);
-
         notification.error({
           message: t("room_card.error.title"),
           description: t("room_card.error.get_info_failed"),
@@ -81,8 +79,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     Name_User: "",
     DP_User: "",
     idbpm: "",
-    dayOnly: "",
-    dayOnlys: [] as string[],
+    dayOnly: false,
+    dayOnlys: [] as number[],
 
     substituteName: "",
     substituteDept: "",
@@ -107,18 +105,28 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     saturday: "bg-orange-50 text-orange-700 border-orange-200",
   };
 
+  const WEEKMAP_DAY: Record<string, number> = {
+    monday: 1,
+    tuesay: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
+  };
+
   const tagRender = (props: CustomTagProps) => {
     const { label, value, closable, onClose } = props;
 
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-1 py-0.4 mr-1.5 rounded-full text-sm font-medium border ${dayColorMap[value as string]} transition-all hover:shadow-sm`}
+        className={`inline-flex items-center gap-1.5 px-0.5 py-0.4 mr-0.5 rounded-full text-sm font-medium border ${dayColorMap[value as string]} transition-all hover:shadow-sm`}
+        style={{ fontSize: 13 }}
       >
         {label}
         {closable && (
           <span
             onClick={onClose}
-            className="cursor-pointer hover:opacity-70 transition-opacity ml-1"
+            className="cursor-pointer hover:opacity-70 transition-opacity"
           >
             ×
           </span>
@@ -144,19 +152,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     };
   }, [onClose]);
 
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      dayOnly: formData.dayOnlys.join(","),
-    }));
-  }, [formData.dayOnlys]);
-
   const handleSubmit = async (values: any) => {
     if (isSubmitDisabled()) return;
 
-    if (!isValidTimeRange()) {
-      return;
-    }
+    if (!isValidTimeRange()) return;
 
     setLoading(true);
 
@@ -192,7 +191,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       const startISO = dayjs(formData.Time_Start).format("YYYY-MM-DD HH:mm:ss");
       const endISO = dayjs(formData.Time_End).format("YYYY-MM-DD HH:mm:ss");
 
-      await roomAPI.bookRoom({
+      const payload = {
         ID_Room: room.ID_Room,
         ID_User: user.userId,
         Topic: values.Topic,
@@ -203,8 +202,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         Name_User: formData.Name_User,
         DP_User: formData.DP_User,
         idbpm: values.idbpm || "",
-        dayOnly: values.dayOnlys?.join(",") || "",
-      });
+        dayOnly: formData.dayOnly,
+        dayOnlys: formData.dayOnlys,
+      };
+
+      await roomAPI.bookRoom(payload);
 
       notification.success({
         message: t("booking_modal.success"),
@@ -215,7 +217,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       setTimeout(() => {
         onClose();
         window.location.reload();
-      }, 1500);
+      }, 1000);
     } catch (err: any) {
       notification.error({
         message: t("booking_modal.error.title"),
@@ -250,8 +252,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         substituteDept: info.Department_Name,
       }));
     } catch (error) {
-      console.error("Get substitute info error:", error);
-
       setFormData((prev) => ({
         ...prev,
         substituteName: "",
@@ -384,7 +384,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                 >
                   <Input
                     placeholder={t("booking_modal.meeting_name_placeholder")}
-                    className="rounded-lg"
+                    className="rounded-lg h-10"
                   />
                 </Form.Item>
 
@@ -399,10 +399,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                   ]}
                   className="mb-0"
                 >
-                  <Input.TextArea
+                  <Input
                     placeholder={t("booking_modal.meeting_purpose_placeholder")}
-                    className="rounded-lg"
-                    rows={1}
+                    // autoSize={false}
+                    // rows={1}
+                    className="
+                      rounded-lg h-10
+                    "
                   />
                 </Form.Item>
 
@@ -420,24 +423,28 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                   <Input
                     onBlur={handleSubstituteBlur}
                     placeholder={t("booking_modal.substitute_card_placeholder")}
-                    className="rounded-lg"
+                    className="rounded-lg h-10"
                   />
                 </Form.Item>
 
-                <Form.Item
-                  label={t("booking_modal.substitute_name")}
-                  className="mb-0"
-                >
-                  <Input
-                    value={
-                      formData.substituteName
-                        ? `${formData.substituteName} - ${formData.substituteDept}`
-                        : ""
-                    }
-                    disabled
-                    className="rounded-lg"
-                  />
-                </Form.Item>
+                {needBpmCheck && (
+                  <Form.Item
+                    label={t("booking_modal.idbpm")}
+                    name="idbpm"
+                    rules={[
+                      {
+                        required: true,
+                        message: t("booking_modal.required"),
+                      },
+                    ]}
+                    className="mb-0"
+                  >
+                    <Input
+                      placeholder={t("booking_modal.enter_bpm")}
+                      className="rounded-lg h-10"
+                    />
+                  </Form.Item>
+                )}
               </div>
 
               {/* Right Column */}
@@ -456,12 +463,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                     showTime={{
                       format: "HH:mm",
                       minuteStep: 1,
-                      hideDisabledOptions: true,
+                      // hideDisabledOptions: true,
                     }}
                     format="YYYY-MM-DD HH:mm"
                     value={dateTimeRange}
                     onChange={handleTimeChange}
-                    className="w-full rounded-lg"
+                    className="w-full rounded-lg h-10"
                     placeholder={[
                       t("booking_modal.start"),
                       t("booking_modal.end"),
@@ -550,36 +557,38 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                     placeholder={t("booking_modal.select_days_placeholder")}
                     options={dayOptions}
                     tagRender={tagRender}
-                    maxTagCount="responsive"
+                    maxTagCount={3}
+                    maxTagPlaceholder={(omitted) => `+${omitted.length} more`}
                     className="rounded-lg"
-                    onChange={(values) => {
+                    size="large"
+                    style={{ fontSize: 14, width: "100%" }}
+                    popupStyle={{ fontSize: 12 }}
+                    onChange={(values: string[]) => {
+                      const mapped = values.map((d) => WEEKMAP_DAY[d]);
+
                       setFormData((prev) => ({
                         ...prev,
-                        dayOnlys: values,
-                        dayOnly: values.join(","),
+                        dayOnly: mapped.length > 0,
+                        dayOnlys: mapped,
                       }));
                     }}
                   />
                 </Form.Item>
 
-                {needBpmCheck && (
-                  <Form.Item
-                    label={t("booking_modal.idbpm")}
-                    name="idbpm"
-                    rules={[
-                      {
-                        required: true,
-                        message: t("booking_modal.required"),
-                      },
-                    ]}
-                    className="mb-0"
-                  >
-                    <Input
-                      placeholder={t("booking_modal.enter_bpm")}
-                      className="rounded-lg"
-                    />
-                  </Form.Item>
-                )}
+                <Form.Item
+                  label={t("booking_modal.substitute_name")}
+                  className="mb-0"
+                >
+                  <Input
+                    value={
+                      formData.substituteName
+                        ? `${formData.substituteName} - ${formData.substituteDept}`
+                        : ""
+                    }
+                    disabled
+                    className="rounded-lg h-10"
+                  />
+                </Form.Item>
               </div>
             </div>
           </Form>

@@ -14,7 +14,7 @@ const RoomList: React.FC<RoomListProps> = ({
   error,
 }) => {
   const { t } = useTranslation();
-  const user = JSON.parse(storage.get("user") || "{}");
+  const user = storage.get("user");
 
   const [schedules, setSchedules] = useState<any[]>([]);
   const [roomsWithBookings, setRoomsWithBookings] = useState<any[]>([]);
@@ -133,16 +133,26 @@ const RoomList: React.FC<RoomListProps> = ({
 
     // Case 2: All Day mode - check if room is currently occupied (at this moment)
     if (filters.timeFilter.mode === "allDay") {
-      if (filters.roomStatus === null) return true;
+      const startOfDay = new Date(now);
+      startOfDay.setHours(0, 0, 0, 0);
 
-      const isCurrentlyOccupied = bookings.some((b: any) => {
-        const meetingStart = new Date(b.Time_Start);
-        const meetingEnd = new Date(b.Time_End);
-        return now >= meetingStart && now <= meetingEnd;
-      });
+      const endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
 
-      if (filters.roomStatus === "available") return !isCurrentlyOccupied;
-      if (filters.roomStatus === "occupied") return isCurrentlyOccupied;
+      const hasMeetingToday = bookings.some((b: any) =>
+        isOverlapping(
+          startOfDay,
+          endOfDay,
+          new Date(b.Time_Start),
+          new Date(b.Time_End),
+        ),
+      );
+
+      if (filters.roomStatus === null) return hasMeetingToday;
+
+      if (filters.roomStatus === "occupied") return hasMeetingToday;
+      if (filters.roomStatus === "available") return !hasMeetingToday;
+
       return true;
     }
 

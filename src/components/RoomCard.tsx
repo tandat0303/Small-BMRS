@@ -8,6 +8,7 @@ import {
   Calendar,
   Warehouse,
   Eye,
+  RefreshCcw,
 } from "lucide-react";
 import { Image, Popover } from "antd";
 import type { Room } from "@/types";
@@ -51,14 +52,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
 
   const [previewVisible, setPreviewVisible] = useState(false);
 
-  // useEffect(() => {
-  //   if (!room.imageRoom) return;
-
-  //   const img = new window.Image();
-  //   img.src = imageUrl;
-  //   img.decode?.();
-  // }, [imageUrl]);
-
   useEffect(() => {
     if (showDetailsModal) {
       if (
@@ -73,49 +66,53 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
     }
   }, [showDetailsModal, filters?.timeFilter]);
 
-  useEffect(() => {
-    const fetchModalSchedule = async () => {
-      try {
-        setModalBookings([]);
+  const fetchModalSchedule = async () => {
+    try {
+      setModalBookings([]);
 
-        const data = await scheduleAPI.getAllSchedulesOfRoom(
-          room.ID_Room,
-          selectedDate.format("YYYY-MM-DD"),
+      const data = await scheduleAPI.getAllSchedulesOfRoom(
+        room.ID_Room,
+        selectedDate.format("YYYY-MM-DD"),
+      );
+
+      const startOfDay = selectedDate.startOf("day");
+      const endOfDay = selectedDate.endOf("day");
+
+      const filtered = data
+        .filter((b: any) => {
+          if (b.Cancel) return false;
+
+          const start = dayjs(parseLocalTime(b.Time_Start));
+
+          return start.isAfter(startOfDay) && start.isBefore(endOfDay);
+        })
+        .sort(
+          (a: any, b: any) =>
+            parseLocalTime(a.Time_Start).getTime() -
+            parseLocalTime(b.Time_Start).getTime(),
         );
 
-        const startOfDay = selectedDate.startOf("day");
-        const endOfDay = selectedDate.endOf("day");
+      setModalBookings(filtered);
+    } catch (error) {
+      Swal.fire({
+        title: t("room_card.error.title"),
+        text: t("room_card.error.fetch_failed"),
+        icon: "error",
+        confirmButtonText: t("room_card.error.confirm_btn"),
+        confirmButtonColor: "#ff0000",
+      });
+    }
+  };
 
-        const filtered = data
-          .filter((b: any) => {
-            if (b.Cancel) return false;
-
-            const start = dayjs(parseLocalTime(b.Time_Start));
-
-            return start.isAfter(startOfDay) && start.isBefore(endOfDay);
-          })
-          .sort(
-            (a: any, b: any) =>
-              parseLocalTime(a.Time_Start).getTime() -
-              parseLocalTime(b.Time_Start).getTime(),
-          );
-
-        setModalBookings(filtered);
-      } catch (error) {
-        Swal.fire({
-          title: t("room_card.error.title"),
-          text: t("room_card.error.fetch_failed"),
-          icon: "error",
-          confirmButtonText: t("room_card.error.confirm_btn"),
-          confirmButtonColor: "#ff0000",
-        });
-      }
-    };
-
+  useEffect(() => {
     if (showDetailsModal) {
       fetchModalSchedule();
     }
   }, [room.ID_Room, selectedDate, showDetailsModal, t]);
+
+  const handleRefreshDetail = () => {
+    fetchModalSchedule();
+  };
 
   return (
     <>
@@ -230,7 +227,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
           </div>
 
           {/* Today's Bookings */}
-          <div className="mb-3 flex-grow">
+          <div className="mb-12 flex-grow">
             <h4 className="text-xs font-semibold text-gray-700 mb-2 flex">
               {t("room_card.today_bookings")}{" "}
               {todayBookings.length > 2 && (
@@ -282,13 +279,13 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
           <div className="flex gap-2 mt-auto">
             <button
               onClick={() => setShowDetailsModal(true)}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm"
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm cursor-pointer"
             >
               {t("room_card.view_details")}
             </button>
             <button
               onClick={() => setShowBookingModal(true)}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm"
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm cursor-pointer"
             >
               {t("room_card.book_now")}
             </button>
@@ -397,12 +394,16 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                         className="!px-3 !py-1.5"
                       />
                     </div>
-                    <div className="flex items-center justify-end mb-3">
-                      {/* <div className="text-sm text-gray-500">
-                        {t("room_card.modal.select_date_hint")}
-                      </div> */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div
+                        className="flex bg-blue-500 hover:bg-blue-700 px-1 py-1.5 text-white rounded-full text-sm font-medium shadow-sm transition whitespace-nowrap cursor-pointer"
+                        onClick={handleRefreshDetail}
+                      >
+                        <RefreshCcw className="w-5 h-5 mr-1" />{" "}
+                        {t("room_card.modal.refresh")}
+                      </div>
                       <button
-                        className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-sm text-sm font-medium shadow-sm transition whitespace-nowrap"
+                        className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-sm text-sm font-medium shadow-sm transition whitespace-nowrap cursor-pointer"
                         onClick={() => setShowBookingModal(true)}
                       >
                         {t("room_card.modal.click_to_book")}
@@ -452,32 +453,51 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                           ((endTotalMinutes - startTotalMinutes) / 60) *
                           PIXELS_PER_HOUR;
 
+                        const durationMinutes =
+                          endTotalMinutes - startTotalMinutes;
+                        const isShortDuration = durationMinutes <= 30;
+                        const isMediumDuration =
+                          durationMinutes > 30 && durationMinutes <= 40;
+                        const minHeight = isShortDuration
+                          ? 23
+                          : isMediumDuration
+                            ? 28
+                            : 32;
+
                         return (
                           <div
                             key={booking.ID_Schedule}
-                            className="
+                            className={`
                               absolute bg-gradient-to-br from-teal-50/50 to-teal-100/50
                               border-2 border-teal-400 border-l-4 border-l-teal-600
-                              p-2 rounded-lg shadow-sm
+                              ${isShortDuration ? "p-0.5" : isMediumDuration ? "p-1" : "p-2"} 
+                              ${isShortDuration ? "rounded-md" : "rounded-lg"} 
+                              shadow-sm
                               transition-all duration-200 ease-out
                               hover:shadow-xl hover:-translate-y-[2px] hover:scale-[1.01]
                               active:scale-[0.98]
                               cursor-pointer
-                            "
+                            `}
                             style={{
                               left: "70px",
                               right: "8px",
                               top: `${topPosition}px`,
-                              height: `${Math.max(duration, 32)}px`,
+                              height: `${Math.max(duration, minHeight)}px`,
                               zIndex: 10,
                               animation: "fadeSlideIn 0.25s ease-out",
                             }}
                           >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="font-semibold text-gray-900 text-xs flex-1 break-words leading-tight">
+                            <div
+                              className={`flex items-start justify-between ${isShortDuration ? "gap-1" : "gap-2"}`}
+                            >
+                              <div
+                                className={`font-semibold text-gray-900 ${isShortDuration ? "text-[10px]" : "text-xs"} flex-1 break-words leading-tight`}
+                              >
                                 {booking.Topic} - {booking.DP_User}
                               </div>
-                              <div className="text-teal-700 text-xs font-bold whitespace-nowrap flex-shrink-0">
+                              <div
+                                className={`text-teal-700 ${isShortDuration ? "text-[10px]" : "text-xs"} font-bold whitespace-nowrap flex-shrink-0`}
+                              >
                                 {(() => {
                                   const start = parseLocalTime(
                                     booking.Time_Start,
