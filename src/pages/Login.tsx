@@ -62,7 +62,6 @@ export default function Login() {
         notification.error({
           message: t("login.error.title"),
           description: t("login.error.text"),
-          placement: "topRight",
         });
       }
     } finally {

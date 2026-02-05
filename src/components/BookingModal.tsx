@@ -14,6 +14,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
   const [form] = Form.useForm();
 
+  const watchedValues = Form.useWatch([], form);
+  useEffect(() => {}, [watchedValues]);
+
   const idUser2 = Form.useWatch("ID_User2", form);
 
   const [userDept, setUserDept] = useState("");
@@ -59,7 +62,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         notification.error({
           message: t("room_card.error.title"),
           description: t("room_card.error.get_info_failed"),
-          placement: "topRight",
         });
       }
     };
@@ -166,6 +168,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
     setLoading(true);
 
+    notification.destroy();
+
     try {
       let allowBooking = true;
 
@@ -174,7 +178,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           notification.warning({
             message: t("booking_modal.error.title"),
             description: t("booking_modal.error.enter_bpm"),
-            placement: "topRight",
           });
         }
 
@@ -184,7 +187,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           notification.error({
             message: t("booking_modal.error.title"),
             description: t("booking_modal.error.bpm_not_sign"),
-            placement: "topRight",
           });
           allowBooking = false;
         }
@@ -219,7 +221,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
       notification.success({
         message: t("booking_modal.success"),
-        placement: "topRight",
         duration: 1.5,
       });
 
@@ -231,7 +232,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       notification.error({
         message: t("booking_modal.error.title"),
         description: t("booking_modal.error.booking_failed"),
-        placement: "topRight",
         className: "bg-red",
       });
     } finally {
@@ -268,7 +268,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       notification.error({
         message: t("room_card.error.title"),
         description: t("room_card.error.substitute_not_found"),
-        placement: "topRight",
       });
     }
   };

@@ -83,7 +83,6 @@ const BookingHistory: React.FC = () => {
       notification.success({
         message: t("booking_history.notify.cancel_success_title"),
         description: t("booking_history.notify.cancel_success_desc"),
-        placement: "topRight",
       });
 
       fetchSchedule();
@@ -91,7 +90,6 @@ const BookingHistory: React.FC = () => {
       notification.error({
         message: t("booking_history.notify.cancel_error_title"),
         description: t("booking_history.notify.cancel_error_desc"),
-        placement: "topRight",
       });
     }
   };

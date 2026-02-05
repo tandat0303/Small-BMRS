@@ -117,7 +117,6 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       if (res.result) {
         notification.success({
           message: t("booking_history.notify.edit_success"),
-          placement: "topRight",
           duration: 1.5,
         });
 
@@ -127,7 +126,6 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
         notification.error({
           message: t("booking_history.error.title"),
           description: t("booking_history.error.edit_failed"),
-          placement: "topRight",
         });
       }
     } catch (err: any) {
@@ -135,7 +133,6 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
         message: t("booking_history.error.title"),
         description:
           err.response?.data?.message || t("booking_history.error.edit_failed"),
-        placement: "topRight",
       });
     } finally {
       setLoading(false);
