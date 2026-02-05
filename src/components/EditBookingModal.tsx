@@ -259,22 +259,22 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                   </Form.Item>
 
                   {/* Substitute Name & Dept - Readonly */}
-                  {userInfo.name && (
-                    <Form.Item
-                      label={
-                        <span className="text-xs sm:text-sm">
-                          {t("booking_history.edit.name_dept")}
-                        </span>
-                      }
-                      className="mb-0"
-                    >
-                      <Input
-                        value={`${userInfo.name} - ${userInfo.dept}`}
-                        disabled
-                        className="rounded-lg bg-gray-50 text-sm"
-                      />
-                    </Form.Item>
-                  )}
+                  {/* {userInfo.name && ( */}
+                  <Form.Item
+                    label={
+                      <span className="text-xs sm:text-sm">
+                        {t("booking_history.edit.name_dept")}
+                      </span>
+                    }
+                    className="mb-0"
+                  >
+                    <Input
+                      value={`${userInfo.name} - ${userInfo.dept}`}
+                      disabled
+                      className="rounded-lg bg-gray-50 text-sm"
+                    />
+                  </Form.Item>
+                  {/* )} */}
                 </div>
               </div>
 
@@ -349,6 +349,13 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                           t("booking_modal.error.working_time"),
                         );
 
+                      const now = dayjs();
+                      if (start.isSame(now, "day") && start.isBefore(now)) {
+                        return Promise.reject(
+                          t("booking_modal.error.time_in_past"),
+                        );
+                      }
+
                       return Promise.resolve();
                     },
                   },
@@ -375,49 +382,60 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                     if (!date) return {};
 
                     const now = dayjs();
-                    const [start] = form.getFieldValue("dateTimeRange") || [];
+                    const isToday = date.isSame(now, "day");
 
-                    const baseDisabledHours = [
+                    const start = form.getFieldValue("timeRange")?.[0];
+
+                    const workingDisabledHours = [
                       ...Array.from({ length: 7 }, (_, i) => i),
                       ...Array.from({ length: 7 }, (_, i) => i + 17),
                     ];
 
-                    if (date.isSame(now, "day")) {
-                      const currentHour = now.hour();
-                      const currentMinute = now.minute();
+                    const pastHoursToday = isToday
+                      ? Array.from({ length: now.hour() }, (_, i) => i)
+                      : [];
+
+                    if (type === "start") {
                       return {
                         disabledHours: () => [
-                          ...baseDisabledHours,
-                          ...Array.from({ length: currentHour }, (_, i) => i),
+                          ...workingDisabledHours,
+                          ...pastHoursToday,
                         ],
-                        disabledMinutes: (hour: number) =>
-                          hour === currentHour
-                            ? Array.from({ length: currentMinute }, (_, i) => i)
-                            : [],
+                        disabledMinutes: (selectedHour) => {
+                          if (isToday && selectedHour === now.hour()) {
+                            return Array.from(
+                              { length: now.minute() + 1 },
+                              (_, i) => i,
+                            );
+                          }
+                          return [];
+                        },
                       };
                     }
 
-                    if (type === "end" && start && date.isSame(start, "day")) {
-                      const startHour = start.hour();
-                      const startMinute = start.minute();
+                    if (type === "end" && start) {
+                      const startTime = dayjs(start);
+                      const startHour = startTime.hour();
 
                       return {
                         disabledHours: () => [
-                          ...baseDisabledHours,
+                          ...workingDisabledHours,
                           ...Array.from({ length: startHour + 1 }, (_, i) => i),
                         ],
-                        disabledMinutes: (hour: number) =>
-                          hour === startHour
-                            ? Array.from(
-                                { length: startMinute + 1 },
-                                (_, i) => i,
-                              )
-                            : [],
+                        disabledMinutes: (selectedHour) => {
+                          if (selectedHour === startHour) {
+                            return Array.from(
+                              { length: startTime.minute() + 1 },
+                              (_, i) => i,
+                            );
+                          }
+                          return [];
+                        },
                       };
                     }
 
                     return {
-                      disabledHours: () => baseDisabledHours,
+                      disabledHours: () => workingDisabledHours,
                     };
                   }}
                 />

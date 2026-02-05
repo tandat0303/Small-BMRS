@@ -469,6 +469,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                             t("booking_modal.error.working_time"),
                           );
 
+                        const now = dayjs();
+                        if (start.isSame(now, "day") && start.isBefore(now)) {
+                          return Promise.reject(
+                            t("booking_modal.error.time_in_past"),
+                          );
+                        }
+
                         return Promise.resolve();
                       },
                     },
@@ -492,19 +499,45 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                     disabledTime={(date, type) => {
                       if (!date) return {};
 
+                      const now = dayjs();
+                      const isToday = date.isSame(now, "day");
+
                       const start = form.getFieldValue("timeRange")?.[0];
 
-                      const baseDisabledHours = [
+                      const workingDisabledHours = [
                         ...Array.from({ length: 7 }, (_, i) => i),
                         ...Array.from({ length: 7 }, (_, i) => i + 17),
                       ];
 
+                      const pastHoursToday = isToday
+                        ? Array.from({ length: now.hour() }, (_, i) => i)
+                        : [];
+
+                      if (type === "start") {
+                        return {
+                          disabledHours: () => [
+                            ...workingDisabledHours,
+                            ...pastHoursToday,
+                          ],
+                          disabledMinutes: (selectedHour) => {
+                            if (isToday && selectedHour === now.hour()) {
+                              return Array.from(
+                                { length: now.minute() + 1 },
+                                (_, i) => i,
+                              );
+                            }
+                            return [];
+                          },
+                        };
+                      }
+
                       if (type === "end" && start) {
-                        const startHour = dayjs(start).hour();
+                        const startTime = dayjs(start);
+                        const startHour = startTime.hour();
 
                         return {
                           disabledHours: () => [
-                            ...baseDisabledHours,
+                            ...workingDisabledHours,
                             ...Array.from(
                               { length: startHour + 1 },
                               (_, i) => i,
@@ -513,7 +546,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                           disabledMinutes: (selectedHour) => {
                             if (selectedHour === startHour) {
                               return Array.from(
-                                { length: dayjs(start).minute() + 1 },
+                                { length: startTime.minute() + 1 },
                                 (_, i) => i,
                               );
                             }
@@ -523,7 +556,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                       }
 
                       return {
-                        disabledHours: () => baseDisabledHours,
+                        disabledHours: () => workingDisabledHours,
                       };
                     }}
                   />
