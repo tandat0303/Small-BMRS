@@ -15,10 +15,12 @@ export const authAPI = {
 
     const user = res?.data.user;
 
-    if (!accessToken || !user) {
+    const authenticated = res?.data.authenticated;
+
+    if (!accessToken || !user || authenticated === false) {
       throw new Error("LOGIN_FAILED");
     }
 
-    return { accessToken, user };
+    return { accessToken, user, authenticated };
   },
 };

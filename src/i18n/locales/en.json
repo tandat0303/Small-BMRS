@@ -144,6 +144,7 @@
     "ok": "OK",
     "submit": "Click to book",
     "submitting": "Processing...",
+    "success_title": "Success",
     "success": "Booking successful!",
     "error": {
       "title": "Booking error",
@@ -192,6 +193,7 @@
     },
     "loading": "Loading...",
     "notify": {
+      "edit_success_title": "Success",
       "cancel_confirm": "Confirmation of cancellation for the meeting",
       "cancel_warning": "Are you sure you want to cancel this booking?",
       "cancel_success_title": "Cancelled successfully",
@@ -216,7 +218,7 @@
       "saving": "Saving...",
       "save": "Save"
     },
-    "required": "Require"
+    "required": "Please enter the information"
   },
   "common": {
     "yes": "Confirm",

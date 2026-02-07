@@ -4,10 +4,11 @@ import type { Schedule } from "@/types";
 import { useTranslation } from "react-i18next";
 import { userInfoAPI } from "@/services/userInfo.api";
 import storage from "@/lib/storage";
-import { DatePicker, Form, Input, notification } from "antd";
+import { DatePicker, Form, Input } from "antd";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { scheduleAPI } from "@/services/schedules.api";
+import { notify } from "./ui/Notification";
 
 interface EditBookingModalProps {
   meeting: Schedule;
@@ -25,6 +26,9 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   const { t } = useTranslation();
 
   const [form] = Form.useForm();
+
+  const watchedValues = Form.useWatch([], form);
+  useEffect(() => {}, [watchedValues]);
 
   const { RangePicker } = DatePicker;
 
@@ -115,25 +119,30 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       );
 
       if (res.result) {
-        notification.success({
-          message: t("booking_history.notify.edit_success"),
-          duration: 1.5,
-        });
+        notify(
+          "success",
+          t("booking_history.notify.edit_success_title"),
+          t("booking_history.notify.edit_success"),
+          1.5,
+        );
 
         onSuccess();
         onClose();
       } else {
-        notification.error({
-          message: t("booking_history.error.title"),
-          description: t("booking_history.error.edit_failed"),
-        });
+        notify(
+          "error",
+          t("booking_history.error.title"),
+          t("booking_history.error.edit_failed"),
+          1.5,
+        );
       }
     } catch (err: any) {
-      notification.error({
-        message: t("booking_history.error.title"),
-        description:
-          err.response?.data?.message || t("booking_history.error.edit_failed"),
-      });
+      notify(
+        "error",
+        t("booking_history.error.title"),
+        err.response?.data?.message || t("booking_history.error.edit_failed"),
+        1.5,
+      );
     } finally {
       setLoading(false);
     }
@@ -156,30 +165,8 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     };
   }, [onClose]);
 
-  const isSubmitDisabled = () => {
-    if (!isInitialized) return true;
-
-    const values = form.getFieldsValue();
-    const errors = form.getFieldsError();
-    const hasErrors = errors.some(({ errors }) => errors.length);
-
-    const [start, end] = values.dateTimeRange || [];
-
-    return (
-      loading ||
-      !isFormChanged() ||
-      hasErrors ||
-      !values.Topic?.trim() ||
-      !values.Purpose?.trim() ||
-      !start ||
-      !end
-    );
-  };
-
-  const isFormChanged = () => {
+  const isFormChanged = (current: any) => {
     if (!isInitialized || !initialValues) return false;
-
-    const current = form.getFieldsValue();
 
     return (
       current.Topic !== initialValues.Topic ||
@@ -188,6 +175,30 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       !current.dateTimeRange?.[1]?.isSame(initialValues.dateTimeRange?.[1])
     );
   };
+
+  const isSubmitDisabled = () => {
+    if (!isInitialized) return true;
+
+    const values = watchedValues;
+    if (!values) return true;
+
+    const errors = form.getFieldsError();
+    const hasErrors = errors.some(({ errors }) => errors.length);
+
+    const [start, end] = values.dateTimeRange || [];
+
+    return (
+      loading ||
+      hasErrors ||
+      !isFormChanged(values) ||
+      !values.Topic?.trim() ||
+      !values.Purpose?.trim() ||
+      !start ||
+      !end
+    );
+  };
+
+  const isDisabled = isSubmitDisabled();
 
   return (
     <>
@@ -225,7 +236,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="text-white/80 hover:text-white hover:bg-white/20 transition-all p-1.5 rounded-lg flex-shrink-0"
+              className="text-white/80 hover:text-white hover:bg-white/20 transition-all p-1.5 rounded-lg flex-shrink-0 cursor-pointer"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -365,8 +376,8 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                 <RangePicker
                   showTime={{
                     format: "HH:mm",
-                    minuteStep: 5,
-                    hideDisabledOptions: true,
+                    minuteStep: 1,
+                    // hideDisabledOptions: true,
                   }}
                   format="YYYY-MM-DD HH:mm"
                   className="w-full rounded-lg text-sm h-10"
@@ -374,17 +385,16 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                     t("booking_history.edit.start"),
                     t("booking_history.edit.end"),
                   ]}
-                  disabledDate={(current) => {
-                    if (!current) return false;
-                    return current < dayjs().startOf("day");
-                  }}
+                  disabledDate={(current) =>
+                    current && current < dayjs().startOf("day")
+                  }
                   disabledTime={(date, type) => {
                     if (!date) return {};
 
                     const now = dayjs();
                     const isToday = date.isSame(now, "day");
 
-                    const start = form.getFieldValue("timeRange")?.[0];
+                    const start = form.getFieldValue("dateTimeRange")?.[0];
 
                     const workingDisabledHours = [
                       ...Array.from({ length: 7 }, (_, i) => i),
@@ -447,15 +457,23 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
           <div className="bg-gray-50 border-t border-gray-200 px-3 sm:px-5 py-2.5 sm:py-3 rounded-b-xl sm:rounded-b-2xl flex items-center justify-end gap-2 sm:gap-3 sticky bottom-0">
             <button
               onClick={onClose}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-colors text-xs sm:text-sm"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-colors text-xs sm:text-sm cursor-pointer"
             >
               {t("booking_history.edit.cancel")}
             </button>
 
             <button
               onClick={() => form.submit()}
-              disabled={isSubmitDisabled()}
-              className="px-4 sm:px-5 py-1.5 sm:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+              disabled={isDisabled}
+              className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg font-medium
+    flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm
+    transition-all duration-200
+    ${
+      isDisabled
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+        : "bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl cursor-pointer"
+    }
+  `}
             >
               {loading ? (
                 <>

@@ -359,7 +359,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, filters }) => {
                       </div>
                       <button
                         onClick={() => setShowDetailsModal(false)}
-                        className="text-white hover:bg-white/20 rounded-full p-2 transition"
+                        className="text-white hover:bg-white/20 rounded-full p-2 transition cursor-pointer"
                       >
                         <svg
                           className="w-6 h-6"

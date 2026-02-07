@@ -87,3 +87,12 @@ export const parseLocalTime = (isoString: string) => {
   const clean = isoString.replace("Z", "").split("+")[0].split(".")[0];
   return new Date(clean);
 };
+
+export const WEEKMAP_DAY: Record<string, number> = {
+  monday: 1,
+  tuesay: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};

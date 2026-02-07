@@ -141,6 +141,7 @@
     "ok": "OK",
     "submit": "Nhấn để đặt phòng",
     "submitting": "Đang xử lý...",
+    "success_title": "Thành công",
     "success": "Đặt phòng thành công!",
     "error": {
       "title": "Lỗi đặt phòng",
@@ -189,6 +190,7 @@
     },
     "loading": "Đang tải...",
     "notify": {
+      "edit_success_title": "Thành công",
       "cancel_confirm": "Xác nhận hủy lịch họp",
       "cancel_warning": "Bạn có chắc muốn hủy lịch họp này ?",
       "cancel_success_title": "Huỷ đặt phòng thành công",
@@ -213,7 +215,7 @@
       "saving": "Đang lưu...",
       "save": "Lưu"
     },
-    "required": "Bắt buộc"
+    "required": "Vui lòng nhập thông tin"
   },
   "common": {
     "yes": "Xác nhận",

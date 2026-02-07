@@ -11,7 +11,7 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
 } from "lucide-react";
-import { Image, Modal, notification } from "antd";
+import { Image, Modal } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import type { Schedule } from "../types";
 import { scheduleAPI } from "../services/schedules.api";
@@ -19,6 +19,7 @@ import storage from "@/lib/storage";
 import { formatDateTime, getMeetingStatus, isUpcoming } from "@/lib/helpers";
 import { useTranslation } from "react-i18next";
 import EditBookingModal from "./EditBookingModal";
+import { notify } from "./ui/Notification";
 
 const BookingHistory: React.FC = () => {
   const { t } = useTranslation();
@@ -31,9 +32,9 @@ const BookingHistory: React.FC = () => {
   >("upcoming");
   const [editingMeeting, setEditingMeeting] = useState<Schedule | null>(null);
   const [sortOrders, setSortOrders] = useState({
-    upcoming: "desc",
-    completed: "desc",
-    cancelled: "desc",
+    upcoming: "asc",
+    completed: "asc",
+    cancelled: "asc",
   });
 
   const IMAGE_URL = import.meta.env.VITE_IMAGE_API_URL;
@@ -80,17 +81,21 @@ const BookingHistory: React.FC = () => {
     try {
       await scheduleAPI.cancelSchedule(scheduleId);
 
-      notification.success({
-        message: t("booking_history.notify.cancel_success_title"),
-        description: t("booking_history.notify.cancel_success_desc"),
-      });
+      notify(
+        "success",
+        t("booking_history.notify.cancel_success_title"),
+        t("booking_history.notify.cancel_success_desc"),
+        1.5,
+      );
 
       fetchSchedule();
     } catch (err) {
-      notification.error({
-        message: t("booking_history.notify.cancel_error_title"),
-        description: t("booking_history.notify.cancel_error_desc"),
-      });
+      notify(
+        "error",
+        t("booking_history.notify.cancel_error_title"),
+        t("booking_history.notify.cancel_error_desc"),
+        1.5,
+      );
     }
   };
 
@@ -223,7 +228,10 @@ const BookingHistory: React.FC = () => {
 
         <button
           onClick={toggleSort}
-          className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-xs sm:text-sm px-2 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition"
+          className="absolute right-0 top-1/2 -translate-y-1/2 -mt-1
+             flex items-center gap-2 text-xs sm:text-sm
+             px-2 py-2 rounded-lg border border-gray-200
+             bg-white hover:bg-gray-50 transition"
         >
           {sortOrders[activeFilter] === "asc" ? (
             <ArrowUpNarrowWide className="w-4.5 h-4.5" />
@@ -253,10 +261,10 @@ const BookingHistory: React.FC = () => {
               meeting.Cancel === "1"
                 ? "text-gray-900 opacity-60 select-none cursor-no-drop"
                 : status === "ongoing"
-                  ? "text-red-600"
+                  ? "text-gray-900"
                   : status === "upcoming"
-                    ? "text-green-600"
-                    : "text-gray-900";
+                    ? "text-gray-900"
+                    : "text-gray-900 opacity-60 select-none cursor-no-drop";
 
             const startDateTime = formatDateTime(meeting.Time_Start);
             const endDateTime = formatDateTime(meeting.Time_End);

@@ -141,6 +141,7 @@
     "ok": "確定",
     "submit": "確認預訂",
     "submitting": "處理中...",
+    "success_title": "成功",
     "success": "預訂成功！",
     "error": {
       "title": "預訂錯誤",
@@ -189,6 +190,7 @@
     },
     "loading": "載入中...",
     "notify": {
+      "edit_success_title": "成功",
       "cancel_confirm": "確認取消會議",
       "cancel_warning": "您確定要取消此預訂嗎？",
       "cancel_success_title": "取消預訂成功",
@@ -213,7 +215,7 @@
       "saving": "儲存中...",
       "save": "儲存"
     },
-    "required": "必填"
+    "required": "請填寫資料"
   },
   "common": {
     "yes": "確認",

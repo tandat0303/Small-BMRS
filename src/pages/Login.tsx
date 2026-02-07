@@ -3,7 +3,7 @@ import logo from "../assets/logo-LY.jpg";
 import vi from "../assets/vi.jpg";
 import en from "../assets/en.jpg";
 import tw from "../assets/tw.jpg";
-import { Form, Input, Select, Button, notification } from "antd";
+import { Form, Input, Select, Button } from "antd";
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 
 import { authAPI } from "@/services/auth.api";
@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 import { useAuth } from "@/contexts/AuthContext";
-import storage from "@/lib/storage";
+import { notify } from "@/components/ui/Notification";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -19,6 +19,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [form] = Form.useForm();
 
   const Lang = ({ img, text }: any) => (
@@ -42,12 +43,17 @@ export default function Login() {
         throw new Error("INVALID_CREDENTIALS");
       }
 
+      if (res?.authenticated !== false) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+
       login(res.user, res.accessToken);
 
       // message.success(t("login.success"));
       navigate("/", { replace: true });
     } catch (error: any) {
-      const token = storage.get("accessToken", "");
       if (
         error?.response?.status === 401 ||
         error.message === "INVALID_CREDENTIALS"
@@ -58,11 +64,8 @@ export default function Login() {
             errors: [t("login.error.text")],
           },
         ]);
-      } else if (!token) {
-        notification.error({
-          message: t("login.error.title"),
-          description: t("login.error.text"),
-        });
+      } else if (isAuthenticated === false) {
+        notify("error", t("login.error.title"), t("login.error.text"), 1.5);
       }
     } finally {
       setLoading(false);
@@ -177,6 +180,7 @@ export default function Login() {
                   loading={loading}
                   size="large"
                   block
+                  style={{ marginTop: 12 }}
                 >
                   {t("login.login")}
                 </Button>
@@ -188,7 +192,6 @@ export default function Login() {
                   <Select
                     value={i18n.language}
                     onChange={(lng) => i18n.changeLanguage(lng)}
-                    className="w-full sm:w-48"
                     options={[
                       {
                         value: "vi",

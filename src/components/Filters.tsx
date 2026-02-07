@@ -182,7 +182,7 @@ const Filters: React.FC<FilterProps> = ({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-blue-500 hover:text-blue-300 font-medium transition-colors"
+                className="text-sm text-blue-500 hover:text-blue-300 font-medium transition-colors cursor-pointer"
                 title={t("filters.clear_all")}
               >
                 <RefreshCcw className="w-5 h-5" />

@@ -127,6 +127,46 @@ body {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
 }
 
+/* FIX ANTD NOTIFICATION TEXT ALIGN */
+.ant-notification-notice {
+  padding: 16px 24px !important;
+}
+
+.ant-notification-notice-message {
+  line-height: 1.4 !important;
+  margin-bottom: 4px !important;
+}
+
+.ant-notification-notice-description {
+  line-height: 1.6 !important;
+}
+
+.ant-notification-notice-with-icon .ant-notification-notice-message {
+  margin-left: 32px !important;
+}
+
+.ant-notification-notice-with-icon .ant-notification-notice-description {
+  margin-left: 32px !important;
+}
+
+.ant-notification * {
+  line-height: normal;
+}
+
+.ant-notification-notice {
+  border-radius: 12px;
+}
+
+.ant-notification-notice-message {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.ant-notification-notice-description {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
 @keyframes fadeSlideIn {
   from {
     opacity: 0;

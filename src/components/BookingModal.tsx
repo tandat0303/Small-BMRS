@@ -5,9 +5,11 @@ import { roomAPI } from "@/services/rooms.api";
 import type { BookingModalProps } from "@/types";
 import { useTranslation } from "react-i18next";
 import { userInfoAPI } from "@/services/userInfo.api";
-import { DatePicker, Form, Select, Input, notification } from "antd";
+import { DatePicker, Form, Select, Input } from "antd";
 import type { CustomTagProps } from "rc-select/lib/BaseSelect";
 import dayjs from "dayjs";
+import { notify, destroyNotification } from "./ui/Notification";
+import { WEEKMAP_DAY } from "@/lib/helpers";
 
 const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
   const { t } = useTranslation();
@@ -59,10 +61,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           DP_User: deptName,
         }));
       } catch (error) {
-        notification.error({
-          message: t("room_card.error.title"),
-          description: t("room_card.error.get_info_failed"),
-        });
+        notify(
+          "error",
+          t("room_card.error.title"),
+          t("room_card.error.get_info_failed"),
+          1.5,
+        );
       }
     };
 
@@ -93,6 +97,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     dayOnly: false,
     dayOnlys: [] as number[],
 
+    substituteUser: "",
     substituteName: "",
     substituteDept: "",
   });
@@ -114,15 +119,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
     thursday: "bg-purple-50 text-purple-700 border-purple-200",
     friday: "bg-rose-50 text-rose-700 border-rose-200",
     saturday: "bg-orange-50 text-orange-700 border-orange-200",
-  };
-
-  const WEEKMAP_DAY: Record<string, number> = {
-    monday: 1,
-    tuesay: 2,
-    wednesday: 3,
-    thursday: 4,
-    friday: 5,
-    saturday: 6,
   };
 
   const tagRender = (props: CustomTagProps) => {
@@ -168,26 +164,30 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
     setLoading(true);
 
-    notification.destroy();
+    destroyNotification();
 
     try {
       let allowBooking = true;
 
       if (needBpmCheck) {
         if (!values.idbpm) {
-          notification.warning({
-            message: t("booking_modal.error.title"),
-            description: t("booking_modal.error.enter_bpm"),
-          });
+          notify(
+            "warning",
+            t("booking_modal.error.title"),
+            t("booking_modal.error.enter_bpm"),
+            1.5,
+          );
         }
 
         const bpmRes = await roomAPI.checkBPMSign(values.idbpm);
 
         if (bpmRes?.issign === 0) {
-          notification.error({
-            message: t("booking_modal.error.title"),
-            description: t("booking_modal.error.bpm_not_sign"),
-          });
+          notify(
+            "error",
+            t("booking_modal.error.title"),
+            t("booking_modal.error.bpm_not_sign"),
+            1.5,
+          );
           allowBooking = false;
         }
       }
@@ -219,21 +219,24 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
 
       await roomAPI.bookRoom(payload);
 
-      notification.success({
-        message: t("booking_modal.success"),
-        duration: 1.5,
-      });
+      notify(
+        "success",
+        t("booking_modal.success_title"),
+        t("booking_modal.success"),
+        1.5,
+      );
 
       setTimeout(() => {
         onClose();
         window.location.reload();
       }, 1000);
     } catch (err: any) {
-      notification.error({
-        message: t("booking_modal.error.title"),
-        description: t("booking_modal.error.booking_failed"),
-        className: "bg-red",
-      });
+      notify(
+        "error",
+        t("booking_modal.error.title"),
+        t("booking_modal.error.booking_failed"),
+        1.5,
+      );
     } finally {
       setLoading(false);
     }
@@ -265,10 +268,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         substituteDept: "",
       }));
 
-      notification.error({
-        message: t("room_card.error.title"),
-        description: t("room_card.error.substitute_not_found"),
-      });
+      notify(
+        "error",
+        t("room_card.error.title"),
+        t("room_card.error.substitute_not_found"),
+        1.5,
+      );
     }
   };
 
@@ -285,6 +290,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       !values.Topic?.trim() ||
       !values.Purpose?.trim() ||
       !values.ID_User2?.trim() ||
+      !values.substituteUser?.trim() ||
       !start ||
       !end ||
       (needBpmCheck && !values.idbpm?.trim())
@@ -299,13 +305,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
       {/* Modal */}
       <div
         className="
-          relative bg-white w-full sm:max-w-4xl
-          max-h-[85dvh]
-          rounded-t-2xl sm:rounded-2xl
-          flex flex-col
-          overflow-hidden
-          shadow-2xl
-        "
+            relative bg-white w-full sm:max-w-4xl
+            max-h-[85dvh]
+            rounded-t-2xl sm:rounded-2xl
+            flex flex-col
+            overflow-hidden
+            shadow-2xl
+          "
       >
         {/* Header - Compact */}
         <div className="bg-blue-500 px-4 sm:px-5 py-3 flex items-center justify-between rounded-t-2xl shrink-0">
@@ -322,7 +328,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="text-white/80 hover:text-white hover:bg-white/20 transition-all p-1.5 rounded-lg"
+            className="text-white/80 hover:text-white hover:bg-white/20 transition-all p-1.5 rounded-l cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -397,8 +403,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                     // autoSize={false}
                     // rows={1}
                     className="
-                      rounded-lg h-10
-                    "
+                        rounded-lg h-10
+                      "
                   />
                 </Form.Item>
 
@@ -593,6 +599,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
                 <Form.Item
                   label={t("booking_modal.substitute_name")}
                   className="mb-0"
+                  name="substituteUser"
                 >
                   <Input
                     value={
@@ -613,7 +620,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
         <div className="shrink-0 bg-gray-50 border-t border-gray-200 px-4 py-3 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-colors text-sm"
+            className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg font-medium transition-colors text-sm cursor-pointer"
           >
             {t("booking_modal.cancel")}
           </button>
@@ -621,7 +628,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ room, onClose }) => {
           <button
             onClick={() => form.submit()}
             disabled={isSubmitDisabled()}
-            className="px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl disabled:bg-gray-400/50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 text-sm"
+            className="px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl disabled:bg-gray-400/50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 text-sm cursor-pointer"
           >
             {loading ? (
               <>
