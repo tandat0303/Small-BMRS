@@ -109,7 +109,7 @@ const Header = () => {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setOpenUserMenu(!openUserMenu)}
-              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-orange-100 hover:bg-orange-200 transition flex-shrink-0"
+              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-orange-100 hover:bg-orange-200 transition flex-shrink-0 cursor-pointer"
             >
               <User className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
             </button>
@@ -158,7 +158,7 @@ const Header = () => {
 
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition"
+                        className="w-full flex items-center gap-2 px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
                         {t("header.logout")}

@@ -98,7 +98,7 @@ const Home = () => {
               <div className="flex justify-center gap-2 sm:gap-4 md:gap-8 overflow-x-auto">
                 <button
                   onClick={() => setActiveTab("home")}
-                  className={`py-2.5 sm:py-3 md:py-4 px-2.5 sm:px-3 md:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
+                  className={`py-2.5 sm:py-3 md:py-4 px-2.5 sm:px-3 md:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap cursor-pointer ${
                     activeTab === "home"
                       ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -108,7 +108,7 @@ const Home = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab("history")}
-                  className={`py-2.5 sm:py-3 md:py-4 px-2.5 sm:px-3 md:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
+                  className={`py-2.5 sm:py-3 md:py-4 px-2.5 sm:px-3 md:px-4 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap cursor-pointer ${
                     activeTab === "history"
                       ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
